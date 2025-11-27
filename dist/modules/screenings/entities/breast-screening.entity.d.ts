@@ -1,0 +1,33 @@
+import { Screening } from './screening.entity';
+import { User } from '../../users/entities/user.entity';
+export type BreastRiskLevel = 'low' | 'moderate' | 'high';
+export type LymphNodeStatus = 'normal' | 'enlarged';
+export type Laterality = 'left' | 'right' | 'bilateral' | 'none';
+export declare class BreastScreening {
+    id: number;
+    screeningId: number;
+    screening: Screening;
+    lumpPresent: boolean;
+    lumpLocation: string | null;
+    lumpSize: string | null;
+    lumpCharacteristics: string | null;
+    dischargePresent: boolean;
+    dischargeType: string | null;
+    dischargeLocation: Laterality | null;
+    nippleInversion: boolean;
+    nippleInversionLaterality: Laterality | null;
+    lymphNodeStatus: LymphNodeStatus;
+    lymphNodeLocation: string | null;
+    skinChanges: string | null;
+    breastSymmetry: string | null;
+    summaryFindings: string;
+    riskAssessment: BreastRiskLevel;
+    recommendations: string | null;
+    referralRequired: boolean;
+    referralFacility: string | null;
+    referralReason: string | null;
+    conductedBy: number;
+    conductedByUser: User;
+    createdAt: Date;
+    updatedAt: Date;
+}

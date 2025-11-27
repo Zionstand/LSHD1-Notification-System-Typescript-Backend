@@ -1,0 +1,32 @@
+import { Patient } from '../../patients/entities/patient.entity';
+import { User } from '../../users/entities/user.entity';
+export type ScreeningStatus = 'completed' | 'pending' | 'follow_up';
+export declare class Screening {
+    id: number;
+    patientId: number;
+    screeningDate: Date;
+    screeningTime: string;
+    conductedBy: number;
+    screeningType: string;
+    bloodPressureSystolic: number;
+    bloodPressureDiastolic: number;
+    temperature: number;
+    pulseRate: number;
+    respiratoryRate: number;
+    weight: number;
+    height: number;
+    bmi: number;
+    bloodSugarRandom: number;
+    bloodSugarFasting: number;
+    cholesterolLevel: number;
+    diagnosis: string;
+    prescription: string;
+    recommendations: string;
+    nextAppointment: Date;
+    status: ScreeningStatus;
+    smsSent: number;
+    createdAt: Date;
+    updatedAt: Date;
+    patient: Patient;
+    conductedByUser: User;
+}

@@ -1,0 +1,31 @@
+import { Screening } from './screening.entity';
+import { User } from '../../users/entities/user.entity';
+export type HypertensionResult = 'normal' | 'elevated' | 'high_stage1' | 'high_stage2' | 'crisis';
+export type BpPosition = 'sitting' | 'standing' | 'lying';
+export type ArmUsed = 'left' | 'right';
+export declare class HypertensionScreening {
+    id: number;
+    screeningId: number;
+    screening: Screening;
+    systolicBp1: number;
+    diastolicBp1: number;
+    position1: BpPosition;
+    armUsed1: ArmUsed;
+    systolicBp2: number | null;
+    diastolicBp2: number | null;
+    position2: BpPosition | null;
+    armUsed2: ArmUsed | null;
+    systolicBp3: number | null;
+    diastolicBp3: number | null;
+    position3: BpPosition | null;
+    armUsed3: ArmUsed | null;
+    screeningResult: HypertensionResult;
+    clinicalObservations: string | null;
+    recommendations: string | null;
+    referToDoctor: boolean;
+    referralReason: string | null;
+    conductedBy: number;
+    conductedByUser: User;
+    createdAt: Date;
+    updatedAt: Date;
+}
