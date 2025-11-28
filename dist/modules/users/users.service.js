@@ -58,24 +58,44 @@ let UsersService = class UsersService {
             relations: ['phcCenter'],
         });
     }
-    async findAll() {
+    async findAll(status) {
+        const whereClause = {};
+        if (status) {
+            whereClause.status = status;
+        }
         const users = await this.usersRepository.find({
+            where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
             relations: ['phcCenter'],
             order: { createdAt: 'DESC' },
         });
-        return users.map((u) => {
-            const nameParts = u.fullName?.split(' ') || ['', ''];
-            return {
-                id: u.id,
-                email: u.email,
-                firstName: nameParts[0] || '',
-                lastName: nameParts.slice(1).join(' ') || '',
-                isActive: u.status === 'approved',
-                role: u.role,
-                facility: u.phcCenter?.centerName || null,
-                createdAt: u.createdAt,
-            };
+        return users.map((u) => this.formatUser(u));
+    }
+    async findPendingUsers() {
+        const users = await this.usersRepository.find({
+            where: { status: 'pending' },
+            relations: ['phcCenter'],
+            order: { createdAt: 'ASC' },
         });
+        return users.map((u) => this.formatUser(u));
+    }
+    formatUser(u) {
+        const nameParts = u.fullName?.split(' ') || ['', ''];
+        return {
+            id: u.id,
+            email: u.email,
+            fullName: u.fullName,
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            phone: u.phone,
+            staffId: u.staffId,
+            status: u.status,
+            isActive: u.status === 'approved',
+            role: u.role,
+            facilityId: u.phcCenterId,
+            facility: u.phcCenter?.centerName || null,
+            createdAt: u.createdAt,
+            approvedAt: u.approvedAt,
+        };
     }
     async findOne(id) {
         return this.usersRepository.findOne({
@@ -84,22 +104,80 @@ let UsersService = class UsersService {
         });
     }
     async approveUser(id, approvedBy) {
-        const user = await this.usersRepository.findOne({ where: { id } });
+        const user = await this.usersRepository.findOne({
+            where: { id },
+            relations: ['phcCenter'],
+        });
         if (!user) {
             throw new common_1.BadRequestException('User not found');
+        }
+        if (user.status === 'approved') {
+            throw new common_1.BadRequestException('User is already approved');
         }
         user.status = 'approved';
         user.approvedAt = new Date();
         user.approvedBy = approvedBy;
-        return this.usersRepository.save(user);
+        const savedUser = await this.usersRepository.save(user);
+        return {
+            message: 'User approved successfully',
+            user: this.formatUser(savedUser),
+        };
     }
     async rejectUser(id) {
-        const user = await this.usersRepository.findOne({ where: { id } });
+        const user = await this.usersRepository.findOne({
+            where: { id },
+            relations: ['phcCenter'],
+        });
         if (!user) {
             throw new common_1.BadRequestException('User not found');
         }
+        if (user.status === 'rejected') {
+            throw new common_1.BadRequestException('User is already rejected');
+        }
         user.status = 'rejected';
-        return this.usersRepository.save(user);
+        const savedUser = await this.usersRepository.save(user);
+        return {
+            message: 'User rejected',
+            user: this.formatUser(savedUser),
+        };
+    }
+    async suspendUser(id) {
+        const user = await this.usersRepository.findOne({
+            where: { id },
+            relations: ['phcCenter'],
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('User not found');
+        }
+        if (user.role === 'admin') {
+            throw new common_1.BadRequestException('Cannot suspend an admin user');
+        }
+        user.status = 'suspended';
+        const savedUser = await this.usersRepository.save(user);
+        return {
+            message: 'User suspended',
+            user: this.formatUser(savedUser),
+        };
+    }
+    async reactivateUser(id, approvedBy) {
+        const user = await this.usersRepository.findOne({
+            where: { id },
+            relations: ['phcCenter'],
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('User not found');
+        }
+        if (user.status === 'approved') {
+            throw new common_1.BadRequestException('User is already active');
+        }
+        user.status = 'approved';
+        user.approvedAt = new Date();
+        user.approvedBy = approvedBy;
+        const savedUser = await this.usersRepository.save(user);
+        return {
+            message: 'User reactivated successfully',
+            user: this.formatUser(savedUser),
+        };
     }
 };
 exports.UsersService = UsersService;

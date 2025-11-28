@@ -28,7 +28,7 @@ export class CreateUserDto {
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   password: string;
 
-  @IsEnum(['admin', 'him_officer', 'nurse', 'doctor', 'lab_scientist'])
+  @IsEnum(['admin', 'him_officer', 'nurse', 'doctor', 'mls', 'cho'])
   role: UserRole;
 
   @IsOptional()

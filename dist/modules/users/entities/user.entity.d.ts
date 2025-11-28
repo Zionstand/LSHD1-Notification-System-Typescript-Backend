@@ -1,5 +1,5 @@
 import { PhcCenter } from '../../facilities/entities/phc-center.entity';
-export type UserRole = 'admin' | 'him_officer' | 'nurse' | 'doctor' | 'lab_scientist';
+export type UserRole = 'admin' | 'him_officer' | 'nurse' | 'doctor' | 'mls' | 'cho';
 export type UserStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 export declare class User {
     id: number;

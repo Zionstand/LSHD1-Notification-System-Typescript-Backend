@@ -17,27 +17,54 @@ exports.CreatePatientDto = CreatePatientDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreatePatientDto.prototype, "firstName", void 0);
+], CreatePatientDto.prototype, "fullName", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreatePatientDto.prototype, "lastName", void 0);
+], CreatePatientDto.prototype, "phone", void 0);
 __decorate([
-    (0, class_validator_1.IsDateString)(),
-    __metadata("design:type", String)
-], CreatePatientDto.prototype, "dateOfBirth", void 0);
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(150),
+    __metadata("design:type", Number)
+], CreatePatientDto.prototype, "age", void 0);
 __decorate([
     (0, class_validator_1.IsIn)(['Male', 'Female', 'male', 'female']),
     __metadata("design:type", String)
 ], CreatePatientDto.prototype, "gender", void 0);
 __decorate([
-    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreatePatientDto.prototype, "phcCenterId", void 0);
+__decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreatePatientDto.prototype, "phone", void 0);
+], CreatePatientDto.prototype, "address", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreatePatientDto.prototype, "screeningTypeId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "nextOfKin", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "nextOfKinPhone", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreatePatientDto.prototype, "address", void 0);
+], CreatePatientDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "altPhone", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "lga", void 0);
 //# sourceMappingURL=create-patient.dto.js.map

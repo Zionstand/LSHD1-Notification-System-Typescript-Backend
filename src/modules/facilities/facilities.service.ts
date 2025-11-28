@@ -12,6 +12,20 @@ export class FacilitiesService {
     private facilitiesRepository: Repository<PhcCenter>,
   ) {}
 
+  // Public endpoint - returns minimal data for registration dropdown
+  async findAllPublic() {
+    const facilities = await this.facilitiesRepository.find({
+      where: { status: 'active' },
+      order: { centerName: 'ASC' },
+      select: ['id', 'centerName'],
+    });
+
+    return facilities.map((f) => ({
+      id: f.id,
+      name: f.centerName,
+    }));
+  }
+
   async findAll(includeInactive: boolean = false) {
     const queryBuilder = this.facilitiesRepository.createQueryBuilder('f');
 

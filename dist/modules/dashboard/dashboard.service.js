@@ -24,31 +24,35 @@ let DashboardService = class DashboardService {
         this.screeningsRepository = screeningsRepository;
     }
     async getStats(facilityId) {
+        const shouldFilterByFacility = facilityId && facilityId > 0;
         const totalClientsQuery = this.patientsRepository.createQueryBuilder('p');
-        if (facilityId) {
+        if (shouldFilterByFacility) {
             totalClientsQuery.where('p.phcCenterId = :facilityId', { facilityId });
         }
         const totalClients = await totalClientsQuery.getCount();
         const todayScreeningsQuery = this.screeningsRepository
             .createQueryBuilder('s')
+            .leftJoin('s.patient', 'p')
             .where('DATE(s.createdAt) = CURDATE()');
-        if (facilityId) {
-            todayScreeningsQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+        if (shouldFilterByFacility) {
+            todayScreeningsQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
         }
         const todayScreenings = await todayScreeningsQuery.getCount();
         const pendingScreeningsQuery = this.screeningsRepository
             .createQueryBuilder('s')
+            .leftJoin('s.patient', 'p')
             .where('s.status IN (:...statuses)', { statuses: ['pending', 'in_progress'] });
-        if (facilityId) {
-            pendingScreeningsQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+        if (shouldFilterByFacility) {
+            pendingScreeningsQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
         }
         const pendingScreenings = await pendingScreeningsQuery.getCount();
         const completedTodayQuery = this.screeningsRepository
             .createQueryBuilder('s')
+            .leftJoin('s.patient', 'p')
             .where('s.status = :status', { status: 'completed' })
             .andWhere('DATE(s.createdAt) = CURDATE()');
-        if (facilityId) {
-            completedTodayQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+        if (shouldFilterByFacility) {
+            completedTodayQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
         }
         const completedToday = await completedTodayQuery.getCount();
         return {

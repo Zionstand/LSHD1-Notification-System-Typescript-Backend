@@ -195,6 +195,134 @@ let ScreeningsService = class ScreeningsService {
         await this.screeningsRepository.save(screening);
         return { message: 'Screening completed' };
     }
+    async addDoctorAssessment(id, dto, doctorId) {
+        const screening = await this.screeningsRepository.findOne({ where: { id } });
+        if (!screening) {
+            throw new common_1.NotFoundException('Screening not found');
+        }
+        screening.diagnosis = dto.clinicalAssessment;
+        if (dto.recommendations)
+            screening.recommendations = dto.recommendations;
+        if (dto.prescription)
+            screening.prescription = dto.prescription;
+        if (dto.patientStatus)
+            screening.patientStatus = dto.patientStatus;
+        if (dto.referralFacility)
+            screening.referralFacility = dto.referralFacility;
+        if (dto.nextAppointment)
+            screening.nextAppointment = new Date(dto.nextAppointment);
+        screening.doctorId = doctorId;
+        screening.doctorAssessedAt = new Date();
+        if (dto.patientStatus === 'requires_followup') {
+            screening.status = 'follow_up';
+        }
+        else {
+            screening.status = 'completed';
+        }
+        await this.screeningsRepository.save(screening);
+        return {
+            message: 'Doctor assessment saved successfully',
+            screening: {
+                id: screening.id,
+                patientStatus: screening.patientStatus,
+                status: screening.status,
+                doctorAssessedAt: screening.doctorAssessedAt,
+            },
+        };
+    }
+    async findPendingDoctorReview(facilityId) {
+        const queryBuilder = this.screeningsRepository
+            .createQueryBuilder('s')
+            .leftJoinAndSelect('s.patient', 'p')
+            .leftJoinAndSelect('s.conductedByUser', 'u')
+            .where('s.doctorId IS NULL')
+            .andWhere('s.status IN (:...statuses)', { statuses: ['pending', 'follow_up'] })
+            .orderBy('s.screeningDate', 'DESC')
+            .addOrderBy('s.screeningTime', 'DESC')
+            .take(100);
+        const screenings = await queryBuilder.getMany();
+        return screenings.map((s) => {
+            const typeId = SCREENING_TYPE_IDS[s.screeningType] || 1;
+            const typeInfo = SCREENING_TYPES[typeId] || {
+                name: s.screeningType || 'General Screening',
+                pathway: 'general',
+            };
+            return {
+                id: s.id,
+                sessionId: `SCR-${String(s.id).padStart(5, '0')}`,
+                status: s.status,
+                createdAt: s.createdAt,
+                screeningDate: s.screeningDate,
+                screeningTime: s.screeningTime,
+                client: {
+                    id: s.patientId,
+                    clientId: `PAT-${String(s.patientId).padStart(5, '0')}`,
+                    firstName: s.patient?.firstName,
+                    lastName: s.patient?.lastName,
+                },
+                notificationType: {
+                    id: typeId,
+                    name: typeInfo.name,
+                    pathway: typeInfo.pathway,
+                },
+                conductedBy: s.conductedByUser?.fullName || null,
+                vitals: {
+                    bloodPressureSystolic: s.bloodPressureSystolic,
+                    bloodPressureDiastolic: s.bloodPressureDiastolic,
+                    temperature: s.temperature,
+                    pulseRate: s.pulseRate,
+                    weight: s.weight,
+                },
+            };
+        });
+    }
+    async findByPatient(patientId) {
+        const screenings = await this.screeningsRepository
+            .createQueryBuilder('s')
+            .leftJoinAndSelect('s.patient', 'p')
+            .leftJoinAndSelect('s.conductedByUser', 'u')
+            .where('s.patientId = :patientId', { patientId })
+            .orderBy('s.screeningDate', 'DESC')
+            .addOrderBy('s.screeningTime', 'DESC')
+            .getMany();
+        return screenings.map((s) => {
+            const typeId = SCREENING_TYPE_IDS[s.screeningType] || 1;
+            const typeInfo = SCREENING_TYPES[typeId] || {
+                name: s.screeningType || 'General Screening',
+                pathway: 'general',
+            };
+            return {
+                id: s.id,
+                sessionId: `SCR-${String(s.id).padStart(5, '0')}`,
+                status: s.status,
+                createdAt: s.createdAt,
+                screeningDate: s.screeningDate,
+                screeningTime: s.screeningTime,
+                notificationType: {
+                    id: typeId,
+                    name: typeInfo.name,
+                    pathway: typeInfo.pathway,
+                },
+                conductedBy: s.conductedByUser?.fullName || null,
+                vitals: {
+                    bloodPressureSystolic: s.bloodPressureSystolic,
+                    bloodPressureDiastolic: s.bloodPressureDiastolic,
+                    temperature: s.temperature,
+                    pulseRate: s.pulseRate,
+                    respiratoryRate: s.respiratoryRate,
+                    weight: s.weight,
+                    height: s.height,
+                    bmi: s.bmi,
+                },
+                results: {
+                    diagnosis: s.diagnosis,
+                    prescription: s.prescription,
+                    recommendations: s.recommendations,
+                    nextAppointment: s.nextAppointment,
+                },
+            };
+        });
+    }
 };
 exports.ScreeningsService = ScreeningsService;
 exports.ScreeningsService = ScreeningsService = __decorate([

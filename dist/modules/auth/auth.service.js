@@ -19,13 +19,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = require("bcryptjs");
 const user_entity_1 = require("../users/entities/user.entity");
-const ROLE_LEVELS = {
-    admin: 100,
-    him_officer: 80,
-    doctor: 70,
-    nurse: 60,
-    lab_scientist: 50,
-};
+const roles_constant_1 = require("./constants/roles.constant");
 let AuthService = class AuthService {
     constructor(usersRepository, jwtService) {
         this.usersRepository = usersRepository;
@@ -82,7 +76,7 @@ let AuthService = class AuthService {
                     role: {
                         id: savedUser.role,
                         name: savedUser.role,
-                        level: ROLE_LEVELS[savedUser.role] || 0,
+                        level: roles_constant_1.ROLE_LEVELS[savedUser.role] || 0,
                     },
                     facility: null,
                 },
@@ -133,7 +127,7 @@ let AuthService = class AuthService {
                 role: {
                     id: user.role,
                     name: user.role,
-                    level: ROLE_LEVELS[user.role] || 0,
+                    level: roles_constant_1.ROLE_LEVELS[user.role] || 0,
                 },
                 facility: user.phcCenterId
                     ? { id: user.phcCenterId, name: user.phcCenter?.centerName }

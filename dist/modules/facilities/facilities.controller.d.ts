@@ -1,6 +1,14 @@
 import { FacilitiesService } from './facilities.service';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
+export declare class PublicFacilitiesController {
+    private facilitiesService;
+    constructor(facilitiesService: FacilitiesService);
+    findAllPublic(): Promise<{
+        id: number;
+        name: string;
+    }[]>;
+}
 export declare class FacilitiesController {
     private facilitiesService;
     constructor(facilitiesService: FacilitiesService);

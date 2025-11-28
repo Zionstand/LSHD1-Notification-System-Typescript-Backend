@@ -1,6 +1,7 @@
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { CreateFollowupDto } from './dto/create-followup.dto';
 export declare class AppointmentsController {
     private appointmentsService;
     constructor(appointmentsService: AppointmentsService);
@@ -96,4 +97,39 @@ export declare class AppointmentsController {
     markNoShow(id: string): Promise<{
         message: string;
     }>;
+    createFollowup(createDto: CreateFollowupDto, req: any): Promise<{
+        message: string;
+        followup: {
+            id: number;
+            appointmentId: string;
+            followupDate: Date;
+            followupTime: string;
+            followupType: string;
+            status: import("./entities/appointment.entity").AppointmentStatus;
+            sendSmsReminder: boolean;
+            reminderDaysBefore: number;
+            reminderScheduledDate: Date | null;
+        };
+    }>;
+    getFollowupsByPatient(patientId: string): Promise<{
+        id: number;
+        appointmentId: string;
+        appointmentDate: Date;
+        appointmentTime: string;
+        appointmentType: string;
+        reason: string;
+        isFollowup: boolean;
+        followupInstructions: string | null;
+        status: import("./entities/appointment.entity").AppointmentStatus;
+        sendSmsReminder: boolean;
+        reminderDaysBefore: number;
+        reminderSent: boolean;
+        reminderScheduledDate: Date | null;
+        screeningId: number | null;
+        facility: {
+            id: number;
+            name: string;
+        };
+        createdAt: Date;
+    }[]>;
 }

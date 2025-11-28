@@ -18,6 +18,7 @@ const screenings_service_1 = require("./screenings.service");
 const create_screening_dto_1 = require("./dto/create-screening.dto");
 const update_vitals_dto_1 = require("./dto/update-vitals.dto");
 const complete_screening_dto_1 = require("./dto/complete-screening.dto");
+const doctor_assessment_dto_1 = require("./dto/doctor-assessment.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let ScreeningsController = class ScreeningsController {
     constructor(screeningsService) {
@@ -25,6 +26,9 @@ let ScreeningsController = class ScreeningsController {
     }
     async findAll(req, status) {
         return this.screeningsService.findAll(req.user.facility_id, status);
+    }
+    async findByPatient(patientId) {
+        return this.screeningsService.findByPatient(+patientId);
     }
     async findOne(id) {
         return this.screeningsService.findOne(+id);
@@ -38,6 +42,12 @@ let ScreeningsController = class ScreeningsController {
     async complete(id, completeDto) {
         return this.screeningsService.complete(+id, completeDto);
     }
+    async findPendingDoctorReview(req) {
+        return this.screeningsService.findPendingDoctorReview(req.user.facility_id);
+    }
+    async addDoctorAssessment(id, dto, req) {
+        return this.screeningsService.addDoctorAssessment(+id, dto, req.user.id);
+    }
 };
 exports.ScreeningsController = ScreeningsController;
 __decorate([
@@ -48,6 +58,13 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ScreeningsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('patient/:patientId'),
+    __param(0, (0, common_1.Param)('patientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ScreeningsController.prototype, "findByPatient", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -79,6 +96,22 @@ __decorate([
     __metadata("design:paramtypes", [String, complete_screening_dto_1.CompleteScreeningDto]),
     __metadata("design:returntype", Promise)
 ], ScreeningsController.prototype, "complete", null);
+__decorate([
+    (0, common_1.Get)('doctor/pending'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ScreeningsController.prototype, "findPendingDoctorReview", null);
+__decorate([
+    (0, common_1.Put)(':id/doctor-assessment'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, doctor_assessment_dto_1.DoctorAssessmentDto, Object]),
+    __metadata("design:returntype", Promise)
+], ScreeningsController.prototype, "addDoctorAssessment", null);
 exports.ScreeningsController = ScreeningsController = __decorate([
     (0, common_1.Controller)('screenings'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

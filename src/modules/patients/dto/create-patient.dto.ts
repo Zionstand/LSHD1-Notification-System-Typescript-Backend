@@ -1,23 +1,44 @@
-import { IsString, IsDateString, IsIn, IsOptional } from 'class-validator';
+import { IsString, IsIn, IsOptional, IsNumber, IsInt, Min, Max } from 'class-validator';
 
 export class CreatePatientDto {
   @IsString()
-  firstName: string;
+  fullName: string;
 
   @IsString()
-  lastName: string;
+  phone: string;
 
-  @IsDateString()
-  dateOfBirth: string;
+  @IsInt()
+  @Min(0)
+  @Max(150)
+  age: number;
 
   @IsIn(['Male', 'Female', 'male', 'female'])
   gender: string;
 
-  @IsOptional()
+  @IsNumber()
+  phcCenterId: number;
+
   @IsString()
-  phone?: string;
+  address: string;
+
+  @IsNumber()
+  screeningTypeId: number;
+
+  @IsString()
+  nextOfKin: string;
+
+  @IsString()
+  nextOfKinPhone: string;
 
   @IsOptional()
   @IsString()
-  address?: string;
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  altPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  lga?: string;
 }

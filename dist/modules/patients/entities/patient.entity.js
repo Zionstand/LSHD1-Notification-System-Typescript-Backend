@@ -29,15 +29,23 @@ __decorate([
     __metadata("design:type", String)
 ], Patient.prototype, "patientNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'first_name', length: 100 }),
+    (0, typeorm_1.Column)({ name: 'full_name', length: 200, nullable: true }),
+    __metadata("design:type", String)
+], Patient.prototype, "fullName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'first_name', length: 100, nullable: true }),
     __metadata("design:type", String)
 ], Patient.prototype, "firstName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'last_name', length: 100 }),
+    (0, typeorm_1.Column)({ name: 'last_name', length: 100, nullable: true }),
     __metadata("design:type", String)
 ], Patient.prototype, "lastName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'date_of_birth', type: 'date' }),
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], Patient.prototype, "age", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'date_of_birth', type: 'date', nullable: true }),
     __metadata("design:type", Date)
 ], Patient.prototype, "dateOfBirth", void 0);
 __decorate([
@@ -72,6 +80,14 @@ __decorate([
     (0, typeorm_1.Column)({ length: 5, nullable: true }),
     __metadata("design:type", String)
 ], Patient.prototype, "genotype", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'next_of_kin', length: 150, nullable: true }),
+    __metadata("design:type", String)
+], Patient.prototype, "nextOfKin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'next_of_kin_phone', length: 20, nullable: true }),
+    __metadata("design:type", String)
+], Patient.prototype, "nextOfKinPhone", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'emergency_contact', length: 150, nullable: true }),
     __metadata("design:type", String)

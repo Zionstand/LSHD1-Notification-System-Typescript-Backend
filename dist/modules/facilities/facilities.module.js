@@ -19,7 +19,7 @@ exports.FacilitiesModule = FacilitiesModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([phc_center_entity_1.PhcCenter])],
         providers: [facilities_service_1.FacilitiesService],
-        controllers: [facilities_controller_1.FacilitiesController, facilities_controller_1.NotificationTypesController],
+        controllers: [facilities_controller_1.PublicFacilitiesController, facilities_controller_1.FacilitiesController, facilities_controller_1.NotificationTypesController],
         exports: [facilities_service_1.FacilitiesService],
     })
 ], FacilitiesModule);

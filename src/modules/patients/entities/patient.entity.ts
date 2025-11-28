@@ -21,13 +21,23 @@ export class Patient {
   @Column({ name: 'patient_number', length: 50 })
   patientNumber: string;
 
-  @Column({ name: 'first_name', length: 100 })
+  // New field - nullable until migration is run
+  @Column({ name: 'full_name', length: 200, nullable: true })
+  fullName: string;
+
+  // Keep for backwards compatibility
+  @Column({ name: 'first_name', length: 100, nullable: true })
   firstName: string;
 
-  @Column({ name: 'last_name', length: 100 })
+  @Column({ name: 'last_name', length: 100, nullable: true })
   lastName: string;
 
-  @Column({ name: 'date_of_birth', type: 'date' })
+  // New field - nullable until migration is run
+  @Column({ type: 'int', nullable: true })
+  age: number;
+
+  // Keep for backwards compatibility, nullable
+  @Column({ name: 'date_of_birth', type: 'date', nullable: true })
   dateOfBirth: Date;
 
   @Column({ type: 'enum', enum: ['male', 'female'] })
@@ -54,6 +64,15 @@ export class Patient {
   @Column({ length: 5, nullable: true })
   genotype: string;
 
+  // New field - nullable until migration is run
+  @Column({ name: 'next_of_kin', length: 150, nullable: true })
+  nextOfKin: string;
+
+  // New field - nullable until migration is run
+  @Column({ name: 'next_of_kin_phone', length: 20, nullable: true })
+  nextOfKinPhone: string;
+
+  // Keep old columns for backwards compatibility
   @Column({ name: 'emergency_contact', length: 150, nullable: true })
   emergencyContact: string;
 

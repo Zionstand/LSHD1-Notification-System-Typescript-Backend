@@ -12,6 +12,7 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { CreateFollowupDto } from './dto/create-followup.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('appointments')
@@ -76,5 +77,19 @@ export class AppointmentsController {
   @Put(':id/no-show')
   async markNoShow(@Param('id') id: string) {
     return this.appointmentsService.markNoShow(+id);
+  }
+
+  @Post('followup')
+  async createFollowup(@Body() createDto: CreateFollowupDto, @Request() req: any) {
+    return this.appointmentsService.createFollowup(
+      createDto,
+      req.user.id,
+      req.user.facility_id || 1,
+    );
+  }
+
+  @Get('followups/patient/:patientId')
+  async getFollowupsByPatient(@Param('patientId') patientId: string) {
+    return this.appointmentsService.getFollowupsByPatient(+patientId);
   }
 }

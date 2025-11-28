@@ -36,7 +36,7 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(['admin', 'him_officer', 'nurse', 'doctor', 'lab_scientist'], {
+    (0, class_validator_1.IsEnum)(['admin', 'him_officer', 'nurse', 'doctor', 'mls', 'cho'], {
         message: 'Invalid role selected',
     }),
     __metadata("design:type", String)

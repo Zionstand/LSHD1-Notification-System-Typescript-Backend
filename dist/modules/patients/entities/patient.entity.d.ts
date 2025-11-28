@@ -4,8 +4,10 @@ export declare class Patient {
     id: number;
     phcCenterId: number;
     patientNumber: string;
+    fullName: string;
     firstName: string;
     lastName: string;
+    age: number;
     dateOfBirth: Date;
     gender: string;
     phone: string;
@@ -15,6 +17,8 @@ export declare class Patient {
     lga: string;
     bloodGroup: string;
     genotype: string;
+    nextOfKin: string;
+    nextOfKinPhone: string;
     emergencyContact: string;
     emergencyPhone: string;
     registeredBy: number;

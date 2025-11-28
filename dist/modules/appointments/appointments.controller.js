@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const appointments_service_1 = require("./appointments.service");
 const create_appointment_dto_1 = require("./dto/create-appointment.dto");
 const update_appointment_dto_1 = require("./dto/update-appointment.dto");
+const create_followup_dto_1 = require("./dto/create-followup.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let AppointmentsController = class AppointmentsController {
     constructor(appointmentsService) {
@@ -48,6 +49,12 @@ let AppointmentsController = class AppointmentsController {
     }
     async markNoShow(id) {
         return this.appointmentsService.markNoShow(+id);
+    }
+    async createFollowup(createDto, req) {
+        return this.appointmentsService.createFollowup(createDto, req.user.id, req.user.facility_id || 1);
+    }
+    async getFollowupsByPatient(patientId) {
+        return this.appointmentsService.getFollowupsByPatient(+patientId);
     }
 };
 exports.AppointmentsController = AppointmentsController;
@@ -119,6 +126,21 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AppointmentsController.prototype, "markNoShow", null);
+__decorate([
+    (0, common_1.Post)('followup'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_followup_dto_1.CreateFollowupDto, Object]),
+    __metadata("design:returntype", Promise)
+], AppointmentsController.prototype, "createFollowup", null);
+__decorate([
+    (0, common_1.Get)('followups/patient/:patientId'),
+    __param(0, (0, common_1.Param)('patientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AppointmentsController.prototype, "getFollowupsByPatient", null);
 exports.AppointmentsController = AppointmentsController = __decorate([
     (0, common_1.Controller)('appointments'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

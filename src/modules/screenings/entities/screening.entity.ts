@@ -80,6 +80,18 @@ export class Screening {
   @Column({ name: 'next_appointment', type: 'date', nullable: true })
   nextAppointment: Date;
 
+  @Column({ name: 'patient_status', length: 50, nullable: true })
+  patientStatus: string;
+
+  @Column({ name: 'referral_facility', length: 255, nullable: true })
+  referralFacility: string;
+
+  @Column({ name: 'doctor_id', nullable: true })
+  doctorId: number;
+
+  @Column({ name: 'doctor_assessed_at', type: 'datetime', nullable: true })
+  doctorAssessedAt: Date;
+
   @Column({
     type: 'enum',
     enum: ['completed', 'pending', 'follow_up'],

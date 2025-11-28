@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { Role, ROLE_LEVELS } from './constants/roles.constant';
 
 interface JwtPayload {
   id: number;
@@ -17,14 +18,6 @@ interface JwtPayload {
   role: UserRole;
   facility_id: number | null;
 }
-
-const ROLE_LEVELS: Record<UserRole, number> = {
-  admin: 100,
-  him_officer: 80,
-  doctor: 70,
-  nurse: 60,
-  lab_scientist: 50,
-};
 
 @Injectable()
 export class AuthService {
@@ -102,7 +95,7 @@ export class AuthService {
           role: {
             id: savedUser.role,
             name: savedUser.role,
-            level: ROLE_LEVELS[savedUser.role] || 0,
+            level: ROLE_LEVELS[savedUser.role as Role] || 0,
           },
           facility: null,
         },
@@ -164,7 +157,7 @@ export class AuthService {
         role: {
           id: user.role,
           name: user.role,
-          level: ROLE_LEVELS[user.role] || 0,
+          level: ROLE_LEVELS[user.role as Role] || 0,
         },
         facility: user.phcCenterId
           ? { id: user.phcCenterId, name: user.phcCenter?.centerName }

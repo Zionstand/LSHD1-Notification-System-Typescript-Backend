@@ -14,38 +14,44 @@ export class DashboardService {
   ) {}
 
   async getStats(facilityId?: number) {
+    // Only filter by facility if facilityId is a valid positive number
+    const shouldFilterByFacility = facilityId && facilityId > 0;
+
     // Total clients/patients
     const totalClientsQuery = this.patientsRepository.createQueryBuilder('p');
-    if (facilityId) {
+    if (shouldFilterByFacility) {
       totalClientsQuery.where('p.phcCenterId = :facilityId', { facilityId });
     }
     const totalClients = await totalClientsQuery.getCount();
 
-    // Today's screenings
+    // Today's screenings - join with patient to filter by facility
     const todayScreeningsQuery = this.screeningsRepository
       .createQueryBuilder('s')
+      .leftJoin('s.patient', 'p')
       .where('DATE(s.createdAt) = CURDATE()');
-    if (facilityId) {
-      todayScreeningsQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+    if (shouldFilterByFacility) {
+      todayScreeningsQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
     }
     const todayScreenings = await todayScreeningsQuery.getCount();
 
-    // Pending screenings
+    // Pending screenings - join with patient to filter by facility
     const pendingScreeningsQuery = this.screeningsRepository
       .createQueryBuilder('s')
+      .leftJoin('s.patient', 'p')
       .where('s.status IN (:...statuses)', { statuses: ['pending', 'in_progress'] });
-    if (facilityId) {
-      pendingScreeningsQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+    if (shouldFilterByFacility) {
+      pendingScreeningsQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
     }
     const pendingScreenings = await pendingScreeningsQuery.getCount();
 
-    // Completed today
+    // Completed today - join with patient to filter by facility
     const completedTodayQuery = this.screeningsRepository
       .createQueryBuilder('s')
+      .leftJoin('s.patient', 'p')
       .where('s.status = :status', { status: 'completed' })
       .andWhere('DATE(s.createdAt) = CURDATE()');
-    if (facilityId) {
-      completedTodayQuery.andWhere('s.phcCenterId = :facilityId', { facilityId });
+    if (shouldFilterByFacility) {
+      completedTodayQuery.andWhere('p.phcCenterId = :facilityId', { facilityId });
     }
     const completedToday = await completedTodayQuery.getCount();
 

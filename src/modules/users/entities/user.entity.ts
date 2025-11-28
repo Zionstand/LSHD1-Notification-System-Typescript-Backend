@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { PhcCenter } from '../../facilities/entities/phc-center.entity';
 
-export type UserRole = 'admin' | 'him_officer' | 'nurse' | 'doctor' | 'lab_scientist';
+export type UserRole = 'admin' | 'him_officer' | 'nurse' | 'doctor' | 'mls' | 'cho';
 export type UserStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
 @Entity('users')
@@ -33,7 +33,7 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'him_officer', 'nurse', 'doctor', 'lab_scientist'],
+    enum: ['admin', 'him_officer', 'nurse', 'doctor', 'mls', 'cho'],
   })
   role: UserRole;
 

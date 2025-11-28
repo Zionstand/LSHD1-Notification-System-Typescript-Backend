@@ -1,8 +1,14 @@
 export declare class CreatePatientDto {
-    firstName: string;
-    lastName: string;
-    dateOfBirth: string;
+    fullName: string;
+    phone: string;
+    age: number;
     gender: string;
-    phone?: string;
-    address?: string;
+    phcCenterId: number;
+    address: string;
+    screeningTypeId: number;
+    nextOfKin: string;
+    nextOfKinPhone: string;
+    email?: string;
+    altPhone?: string;
+    lga?: string;
 }

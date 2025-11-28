@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { CreateFollowupDto } from './dto/create-followup.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -243,5 +244,80 @@ export class AppointmentsService {
     await this.appointmentsRepository.save(appointment);
 
     return { message: 'Appointment marked as no-show' };
+  }
+
+  async createFollowup(createDto: CreateFollowupDto, userId: number, facilityId: number) {
+    // Calculate reminder scheduled date
+    let reminderScheduledDate: Date | null = null;
+    if (createDto.sendSmsReminder !== false) {
+      const followupDate = new Date(createDto.followupDate);
+      const daysBefore = createDto.reminderDaysBefore || 1;
+      reminderScheduledDate = new Date(followupDate);
+      reminderScheduledDate.setDate(reminderScheduledDate.getDate() - daysBefore);
+    }
+
+    const appointment = this.appointmentsRepository.create({
+      patientId: createDto.clientId,
+      phcCenterId: facilityId || 1,
+      screeningId: createDto.screeningId || null,
+      appointmentDate: new Date(createDto.followupDate),
+      appointmentTime: createDto.followupTime || '09:00',
+      appointmentType: createDto.followupType,
+      reason: createDto.followupInstructions || null,
+      isFollowup: 1,
+      followupInstructions: createDto.followupInstructions || null,
+      status: 'scheduled',
+      sendSmsReminder: createDto.sendSmsReminder !== false ? 1 : 0,
+      reminderDaysBefore: createDto.reminderDaysBefore || 1,
+      reminderScheduledDate: reminderScheduledDate,
+      createdBy: userId,
+    } as Partial<Appointment>);
+
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    return {
+      message: 'Follow-up scheduled successfully',
+      followup: {
+        id: saved.id,
+        appointmentId: `FUP-${String(saved.id).padStart(5, '0')}`,
+        followupDate: saved.appointmentDate,
+        followupTime: saved.appointmentTime,
+        followupType: saved.appointmentType,
+        status: saved.status,
+        sendSmsReminder: saved.sendSmsReminder === 1,
+        reminderDaysBefore: saved.reminderDaysBefore,
+        reminderScheduledDate: saved.reminderScheduledDate,
+      },
+    };
+  }
+
+  async getFollowupsByPatient(patientId: number) {
+    const appointments = await this.appointmentsRepository.find({
+      where: { patientId, isFollowup: 1 },
+      relations: ['phcCenter', 'screening'],
+      order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+    });
+
+    return appointments.map((a) => ({
+      id: a.id,
+      appointmentId: `FUP-${String(a.id).padStart(5, '0')}`,
+      appointmentDate: a.appointmentDate,
+      appointmentTime: a.appointmentTime,
+      appointmentType: a.appointmentType,
+      reason: a.reason,
+      isFollowup: a.isFollowup === 1,
+      followupInstructions: a.followupInstructions,
+      status: a.status,
+      sendSmsReminder: a.sendSmsReminder === 1,
+      reminderDaysBefore: a.reminderDaysBefore,
+      reminderSent: a.reminderSent === 1,
+      reminderScheduledDate: a.reminderScheduledDate,
+      screeningId: a.screeningId,
+      facility: {
+        id: a.phcCenter?.id,
+        name: a.phcCenter?.centerName,
+      },
+      createdAt: a.createdAt,
+    }));
   }
 }

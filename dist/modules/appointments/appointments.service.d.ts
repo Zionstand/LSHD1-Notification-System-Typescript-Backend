@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { CreateFollowupDto } from './dto/create-followup.dto';
 export declare class AppointmentsService {
     private appointmentsRepository;
     constructor(appointmentsRepository: Repository<Appointment>);
@@ -97,4 +98,39 @@ export declare class AppointmentsService {
     markNoShow(id: number): Promise<{
         message: string;
     }>;
+    createFollowup(createDto: CreateFollowupDto, userId: number, facilityId: number): Promise<{
+        message: string;
+        followup: {
+            id: number;
+            appointmentId: string;
+            followupDate: Date;
+            followupTime: string;
+            followupType: string;
+            status: AppointmentStatus;
+            sendSmsReminder: boolean;
+            reminderDaysBefore: number;
+            reminderScheduledDate: Date | null;
+        };
+    }>;
+    getFollowupsByPatient(patientId: number): Promise<{
+        id: number;
+        appointmentId: string;
+        appointmentDate: Date;
+        appointmentTime: string;
+        appointmentType: string;
+        reason: string;
+        isFollowup: boolean;
+        followupInstructions: string | null;
+        status: AppointmentStatus;
+        sendSmsReminder: boolean;
+        reminderDaysBefore: number;
+        reminderSent: boolean;
+        reminderScheduledDate: Date | null;
+        screeningId: number | null;
+        facility: {
+            id: number;
+            name: string;
+        };
+        createdAt: Date;
+    }[]>;
 }

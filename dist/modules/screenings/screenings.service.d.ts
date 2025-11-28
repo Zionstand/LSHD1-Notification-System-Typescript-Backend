@@ -3,6 +3,7 @@ import { Screening } from './entities/screening.entity';
 import { CreateScreeningDto } from './dto/create-screening.dto';
 import { UpdateVitalsDto } from './dto/update-vitals.dto';
 import { CompleteScreeningDto } from './dto/complete-screening.dto';
+import { DoctorAssessmentDto } from './dto/doctor-assessment.dto';
 export declare class ScreeningsService {
     private screeningsRepository;
     constructor(screeningsRepository: Repository<Screening>);
@@ -76,4 +77,70 @@ export declare class ScreeningsService {
     complete(id: number, completeDto: CompleteScreeningDto): Promise<{
         message: string;
     }>;
+    addDoctorAssessment(id: number, dto: DoctorAssessmentDto, doctorId: number): Promise<{
+        message: string;
+        screening: {
+            id: number;
+            patientStatus: string;
+            status: "completed" | "follow_up";
+            doctorAssessedAt: Date;
+        };
+    }>;
+    findPendingDoctorReview(facilityId?: number): Promise<{
+        id: number;
+        sessionId: string;
+        status: import("./entities/screening.entity").ScreeningStatus;
+        createdAt: Date;
+        screeningDate: Date;
+        screeningTime: string;
+        client: {
+            id: number;
+            clientId: string;
+            firstName: string;
+            lastName: string;
+        };
+        notificationType: {
+            id: number;
+            name: string;
+            pathway: string;
+        };
+        conductedBy: string | null;
+        vitals: {
+            bloodPressureSystolic: number;
+            bloodPressureDiastolic: number;
+            temperature: number;
+            pulseRate: number;
+            weight: number;
+        };
+    }[]>;
+    findByPatient(patientId: number): Promise<{
+        id: number;
+        sessionId: string;
+        status: import("./entities/screening.entity").ScreeningStatus;
+        createdAt: Date;
+        screeningDate: Date;
+        screeningTime: string;
+        notificationType: {
+            id: number;
+            name: string;
+            pathway: string;
+        };
+        conductedBy: string | null;
+        vitals: {
+            bloodPressureSystolic: number;
+            bloodPressureDiastolic: number;
+            temperature: number;
+            pulseRate: number;
+            respiratoryRate: number;
+            weight: number;
+            height: number;
+            bmi: number;
+        };
+        results: {
+            diagnosis: string;
+            prescription: string;
+            recommendations: string;
+            nextAppointment: Date;
+        };
+    }[]>;
 }

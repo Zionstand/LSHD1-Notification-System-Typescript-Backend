@@ -5,6 +5,10 @@ import { UpdateFacilityDto } from './dto/update-facility.dto';
 export declare class FacilitiesService {
     private facilitiesRepository;
     constructor(facilitiesRepository: Repository<PhcCenter>);
+    findAllPublic(): Promise<{
+        id: number;
+        name: string;
+    }[]>;
     findAll(includeInactive?: boolean): Promise<{
         id: number;
         name: string;

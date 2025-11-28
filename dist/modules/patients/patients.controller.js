@@ -15,11 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatientsController = void 0;
 const common_1 = require("@nestjs/common");
 const patients_service_1 = require("./patients.service");
+const screenings_service_1 = require("../screenings/screenings.service");
 const create_patient_dto_1 = require("./dto/create-patient.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let PatientsController = class PatientsController {
-    constructor(patientsService) {
+    constructor(patientsService, screeningsService) {
         this.patientsService = patientsService;
+        this.screeningsService = screeningsService;
     }
     async findAll(req) {
         return this.patientsService.findAll(req.user.facility_id);
@@ -28,7 +30,16 @@ let PatientsController = class PatientsController {
         return this.patientsService.findOne(+id);
     }
     async create(createPatientDto, req) {
-        return this.patientsService.create(createPatientDto, req.user.id, req.user.facility_id || 1);
+        const result = await this.patientsService.create(createPatientDto, req.user.id);
+        const screeningResult = await this.screeningsService.create({
+            clientId: result.client.id,
+            notificationTypeId: result.screeningTypeId,
+        }, req.user.id, createPatientDto.phcCenterId);
+        return {
+            message: 'Client registered and screening session created',
+            client: result.client,
+            screening: screeningResult.session,
+        };
     }
 };
 exports.PatientsController = PatientsController;
@@ -57,6 +68,7 @@ __decorate([
 exports.PatientsController = PatientsController = __decorate([
     (0, common_1.Controller)('clients'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [patients_service_1.PatientsService])
+    __metadata("design:paramtypes", [patients_service_1.PatientsService,
+        screenings_service_1.ScreeningsService])
 ], PatientsController);
 //# sourceMappingURL=patients.controller.js.map

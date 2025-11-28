@@ -8,13 +8,17 @@ import {
   Request,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
+import { ScreeningsService } from '../screenings/screenings.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('clients')
 @UseGuards(JwtAuthGuard)
 export class PatientsController {
-  constructor(private patientsService: PatientsService) {}
+  constructor(
+    private patientsService: PatientsService,
+    private screeningsService: ScreeningsService,
+  ) {}
 
   @Get()
   async findAll(@Request() req: any) {
@@ -28,10 +32,26 @@ export class PatientsController {
 
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto, @Request() req: any) {
-    return this.patientsService.create(
+    // Create the patient
+    const result = await this.patientsService.create(
       createPatientDto,
       req.user.id,
-      req.user.facility_id || 1,
     );
+
+    // Create a screening session for the patient
+    const screeningResult = await this.screeningsService.create(
+      {
+        clientId: result.client.id,
+        notificationTypeId: result.screeningTypeId,
+      },
+      req.user.id,
+      createPatientDto.phcCenterId,
+    );
+
+    return {
+      message: 'Client registered and screening session created',
+      client: result.client,
+      screening: screeningResult.session,
+    };
   }
 }

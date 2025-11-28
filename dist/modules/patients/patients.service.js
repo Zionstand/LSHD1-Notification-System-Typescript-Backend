@@ -21,28 +21,56 @@ let PatientsService = class PatientsService {
     constructor(patientsRepository) {
         this.patientsRepository = patientsRepository;
     }
+    formatPatient(p) {
+        const fullName = p.fullName || `${p.firstName || ''} ${p.lastName || ''}`.trim();
+        const nameParts = fullName?.split(' ') || [];
+        const firstName = p.firstName || nameParts[0] || '';
+        const lastName = p.lastName || nameParts.slice(1).join(' ') || '';
+        let age = p.age;
+        if (age === null || age === undefined) {
+            if (p.dateOfBirth) {
+                const birthDate = new Date(p.dateOfBirth);
+                const today = new Date();
+                age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+            }
+            else {
+                age = 0;
+            }
+        }
+        return {
+            id: p.id,
+            client_id: p.patientNumber,
+            full_name: fullName,
+            first_name: firstName,
+            last_name: lastName,
+            age: age,
+            date_of_birth: p.dateOfBirth,
+            gender: p.gender,
+            phone: p.phone,
+            address: p.address,
+            next_of_kin: p.nextOfKin || p.emergencyContact || '',
+            next_of_kin_phone: p.nextOfKinPhone || p.emergencyPhone || '',
+            facility_id: p.phcCenterId,
+            facility_name: p.phcCenter?.centerName || null,
+            lga: p.lga,
+            created_at: p.createdAt,
+        };
+    }
     async findAll(facilityId) {
         const queryBuilder = this.patientsRepository
             .createQueryBuilder('p')
             .leftJoinAndSelect('p.phcCenter', 'c')
             .leftJoinAndSelect('p.registeredByUser', 'u')
             .orderBy('p.createdAt', 'DESC');
-        if (facilityId) {
+        if (facilityId && facilityId > 0) {
             queryBuilder.where('p.phcCenterId = :facilityId', { facilityId });
         }
         const patients = await queryBuilder.getMany();
-        return patients.map((p) => ({
-            id: p.id,
-            client_id: p.patientNumber,
-            first_name: p.firstName,
-            last_name: p.lastName,
-            date_of_birth: p.dateOfBirth,
-            gender: p.gender,
-            phone: p.phone,
-            address: p.address,
-            facility_name: p.phcCenter?.centerName || null,
-            created_at: p.createdAt,
-        }));
+        return patients.map((p) => this.formatPatient(p));
     }
     async findOne(id) {
         const patient = await this.patientsRepository.findOne({
@@ -52,45 +80,38 @@ let PatientsService = class PatientsService {
         if (!patient) {
             throw new common_1.NotFoundException('Client not found');
         }
-        return {
-            id: patient.id,
-            client_id: patient.patientNumber,
-            first_name: patient.firstName,
-            last_name: patient.lastName,
-            date_of_birth: patient.dateOfBirth,
-            gender: patient.gender,
-            phone: patient.phone,
-            address: patient.address,
-            facility_name: patient.phcCenter?.centerName || null,
-        };
+        return this.formatPatient(patient);
     }
-    async create(createPatientDto, userId, facilityId) {
+    async create(createPatientDto, userId) {
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substring(2, 6).toUpperCase();
         const patientNumber = `PAT-${timestamp}-${random}`;
+        const nameParts = createPatientDto.fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
         const patient = this.patientsRepository.create({
             patientNumber,
-            firstName: createPatientDto.firstName,
-            lastName: createPatientDto.lastName,
-            dateOfBirth: new Date(createPatientDto.dateOfBirth),
+            fullName: createPatientDto.fullName.trim(),
+            firstName,
+            lastName,
+            age: createPatientDto.age,
             gender: createPatientDto.gender.toLowerCase(),
-            phone: createPatientDto.phone || 'N/A',
-            address: createPatientDto.address || 'N/A',
-            phcCenterId: facilityId || 1,
+            phone: createPatientDto.phone,
+            address: createPatientDto.address,
+            phcCenterId: createPatientDto.phcCenterId,
+            nextOfKin: createPatientDto.nextOfKin,
+            nextOfKinPhone: createPatientDto.nextOfKinPhone,
+            lga: createPatientDto.lga || null,
+            email: createPatientDto.email || null,
+            altPhone: createPatientDto.altPhone || null,
             registeredBy: userId,
         });
         const saved = await this.patientsRepository.save(patient);
+        const savedPatient = Array.isArray(saved) ? saved[0] : saved;
         return {
-            message: 'Client created',
-            client: {
-                id: saved.id,
-                client_id: saved.patientNumber,
-                first_name: saved.firstName,
-                last_name: saved.lastName,
-                date_of_birth: saved.dateOfBirth,
-                gender: saved.gender,
-                phone: saved.phone,
-            },
+            message: 'Client registered successfully',
+            client: this.formatPatient(savedPatient),
+            screeningTypeId: createPatientDto.screeningTypeId,
         };
     }
 };

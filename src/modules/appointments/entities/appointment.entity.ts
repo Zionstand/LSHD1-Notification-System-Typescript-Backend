@@ -10,6 +10,7 @@ import {
 import { Patient } from '../../patients/entities/patient.entity';
 import { PhcCenter } from '../../facilities/entities/phc-center.entity';
 import { User } from '../../users/entities/user.entity';
+import { Screening } from '../../screenings/entities/screening.entity';
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
 
@@ -24,6 +25,9 @@ export class Appointment {
   @Column({ name: 'phc_center_id' })
   phcCenterId: number;
 
+  @Column({ name: 'screening_id', nullable: true })
+  screeningId: number | null;
+
   @Column({ name: 'appointment_date', type: 'date' })
   appointmentDate: Date;
 
@@ -36,6 +40,12 @@ export class Appointment {
   @Column({ type: 'text', nullable: true })
   reason: string;
 
+  @Column({ name: 'is_followup', type: 'tinyint', default: 0 })
+  isFollowup: number;
+
+  @Column({ name: 'followup_instructions', type: 'text', nullable: true })
+  followupInstructions: string | null;
+
   @Column({
     type: 'enum',
     enum: ['scheduled', 'completed', 'cancelled', 'no_show'],
@@ -46,6 +56,15 @@ export class Appointment {
 
   @Column({ name: 'reminder_sent', type: 'tinyint', default: 0, nullable: true })
   reminderSent: number;
+
+  @Column({ name: 'send_sms_reminder', type: 'tinyint', default: 1 })
+  sendSmsReminder: number;
+
+  @Column({ name: 'reminder_days_before', type: 'int', default: 1 })
+  reminderDaysBefore: number;
+
+  @Column({ name: 'reminder_scheduled_date', type: 'date', nullable: true })
+  reminderScheduledDate: Date | null;
 
   @Column({ name: 'created_by' })
   createdBy: number;
@@ -67,4 +86,8 @@ export class Appointment {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by' })
   createdByUser: User;
+
+  @ManyToOne(() => Screening)
+  @JoinColumn({ name: 'screening_id' })
+  screening: Screening;
 }

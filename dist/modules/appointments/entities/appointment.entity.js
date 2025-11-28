@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const patient_entity_1 = require("../../patients/entities/patient.entity");
 const phc_center_entity_1 = require("../../facilities/entities/phc-center.entity");
 const user_entity_1 = require("../../users/entities/user.entity");
+const screening_entity_1 = require("../../screenings/entities/screening.entity");
 let Appointment = class Appointment {
 };
 exports.Appointment = Appointment;
@@ -29,6 +30,10 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'phc_center_id' }),
     __metadata("design:type", Number)
 ], Appointment.prototype, "phcCenterId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'screening_id', nullable: true }),
+    __metadata("design:type", Object)
+], Appointment.prototype, "screeningId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'appointment_date', type: 'date' }),
     __metadata("design:type", Date)
@@ -46,6 +51,14 @@ __decorate([
     __metadata("design:type", String)
 ], Appointment.prototype, "reason", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'is_followup', type: 'tinyint', default: 0 }),
+    __metadata("design:type", Number)
+], Appointment.prototype, "isFollowup", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'followup_instructions', type: 'text', nullable: true }),
+    __metadata("design:type", Object)
+], Appointment.prototype, "followupInstructions", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: ['scheduled', 'completed', 'cancelled', 'no_show'],
@@ -58,6 +71,18 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'reminder_sent', type: 'tinyint', default: 0, nullable: true }),
     __metadata("design:type", Number)
 ], Appointment.prototype, "reminderSent", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'send_sms_reminder', type: 'tinyint', default: 1 }),
+    __metadata("design:type", Number)
+], Appointment.prototype, "sendSmsReminder", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'reminder_days_before', type: 'int', default: 1 }),
+    __metadata("design:type", Number)
+], Appointment.prototype, "reminderDaysBefore", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'reminder_scheduled_date', type: 'date', nullable: true }),
+    __metadata("design:type", Object)
+], Appointment.prototype, "reminderScheduledDate", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'created_by' }),
     __metadata("design:type", Number)
@@ -85,6 +110,11 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'created_by' }),
     __metadata("design:type", user_entity_1.User)
 ], Appointment.prototype, "createdByUser", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => screening_entity_1.Screening),
+    (0, typeorm_1.JoinColumn)({ name: 'screening_id' }),
+    __metadata("design:type", screening_entity_1.Screening)
+], Appointment.prototype, "screening", void 0);
 exports.Appointment = Appointment = __decorate([
     (0, typeorm_1.Entity)('appointments')
 ], Appointment);

@@ -50,7 +50,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ['admin', 'him_officer', 'nurse', 'doctor', 'lab_scientist'],
+        enum: ['admin', 'him_officer', 'nurse', 'doctor', 'mls', 'cho'],
     }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);

@@ -101,6 +101,22 @@ __decorate([
     __metadata("design:type", Date)
 ], Screening.prototype, "nextAppointment", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'patient_status', length: 50, nullable: true }),
+    __metadata("design:type", String)
+], Screening.prototype, "patientStatus", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'referral_facility', length: 255, nullable: true }),
+    __metadata("design:type", String)
+], Screening.prototype, "referralFacility", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'doctor_id', nullable: true }),
+    __metadata("design:type", Number)
+], Screening.prototype, "doctorId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'doctor_assessed_at', type: 'datetime', nullable: true }),
+    __metadata("design:type", Date)
+], Screening.prototype, "doctorAssessedAt", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: ['completed', 'pending', 'follow_up'],

@@ -23,6 +23,10 @@ export declare class Screening {
     prescription: string;
     recommendations: string;
     nextAppointment: Date;
+    patientStatus: string;
+    referralFacility: string;
+    doctorId: number;
+    doctorAssessedAt: Date;
     status: ScreeningStatus;
     smsSent: number;
     createdAt: Date;

@@ -21,6 +21,17 @@ let FacilitiesService = class FacilitiesService {
     constructor(facilitiesRepository) {
         this.facilitiesRepository = facilitiesRepository;
     }
+    async findAllPublic() {
+        const facilities = await this.facilitiesRepository.find({
+            where: { status: 'active' },
+            order: { centerName: 'ASC' },
+            select: ['id', 'centerName'],
+        });
+        return facilities.map((f) => ({
+            id: f.id,
+            name: f.centerName,
+        }));
+    }
     async findAll(includeInactive = false) {
         const queryBuilder = this.facilitiesRepository.createQueryBuilder('f');
         if (!includeInactive) {
