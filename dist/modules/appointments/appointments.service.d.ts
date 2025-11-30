@@ -1,10 +1,11 @@
-import { Repository } from 'typeorm';
-import { Appointment, AppointmentStatus } from './entities/appointment.entity';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { CreateFollowupDto } from './dto/create-followup.dto';
+import { Repository } from "typeorm";
+import { Appointment, AppointmentStatus } from "./entities/appointment.entity";
+import { CreateAppointmentDto } from "./dto/create-appointment.dto";
+import { UpdateAppointmentDto } from "./dto/update-appointment.dto";
+import { CreateFollowupDto } from "./dto/create-followup.dto";
 export declare class AppointmentsService {
     private appointmentsRepository;
+    private readonly logger;
     constructor(appointmentsRepository: Repository<Appointment>);
     findAll(facilityId?: number, status?: string, date?: string): Promise<{
         id: number;

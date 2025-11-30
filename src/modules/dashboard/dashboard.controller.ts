@@ -11,4 +11,9 @@ export class DashboardController {
   async getStats(@Request() req: any) {
     return this.dashboardService.getStats(req.user.facility_id);
   }
+
+  @Get('extended-stats')
+  async getExtendedStats(@Request() req: any) {
+    return this.dashboardService.getExtendedStats(req.user.facility_id);
+  }
 }

@@ -75,6 +75,10 @@ __decorate([
     __metadata("design:type", String)
 ], CreateHypertensionScreeningDto.prototype, "armUsed3", void 0);
 __decorate([
+    (0, class_validator_1.IsIn)(['normal', 'elevated', 'high_stage1', 'high_stage2', 'crisis']),
+    __metadata("design:type", String)
+], CreateHypertensionScreeningDto.prototype, "screeningResult", void 0);
+__decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
@@ -94,9 +98,19 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateHypertensionScreeningDto.prototype, "referralReason", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateHypertensionScreeningDto.prototype, "conductedById", void 0);
 class UpdateHypertensionScreeningDto {
 }
 exports.UpdateHypertensionScreeningDto = UpdateHypertensionScreeningDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(['normal', 'elevated', 'high_stage1', 'high_stage2', 'crisis']),
+    __metadata("design:type", String)
+], UpdateHypertensionScreeningDto.prototype, "screeningResult", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),

@@ -14,6 +14,7 @@ export declare class CreatePsaScreeningDto {
     clinicalObservations?: string;
     referToDoctor?: boolean;
     referralReason?: string;
+    labPersonnelId?: number;
 }
 export declare class UpdatePsaScreeningDto {
     psaLevel?: number;

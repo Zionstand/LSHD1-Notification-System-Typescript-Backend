@@ -17,6 +17,9 @@ const screenings_module_1 = require("./modules/screenings/screenings.module");
 const facilities_module_1 = require("./modules/facilities/facilities.module");
 const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const appointments_module_1 = require("./modules/appointments/appointments.module");
+const audit_module_1 = require("./modules/audit/audit.module");
+const reports_module_1 = require("./modules/reports/reports.module");
+const sms_module_1 = require("./modules/sms/sms.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -29,13 +32,13 @@ exports.AppModule = AppModule = __decorate([
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => ({
-                    type: 'mysql',
-                    host: configService.get('DB_HOST'),
-                    port: configService.get('DB_PORT') || 3306,
-                    username: configService.get('DB_USER'),
-                    password: configService.get('DB_PASSWORD'),
-                    database: configService.get('DB_NAME'),
-                    entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                    type: "mysql",
+                    host: configService.get("DB_HOST"),
+                    port: configService.get("DB_PORT") || 3306,
+                    username: configService.get("DB_USER"),
+                    password: configService.get("DB_PASSWORD"),
+                    database: configService.get("DB_NAME"),
+                    entities: [__dirname + "/**/*.entity{.ts,.js}"],
                     synchronize: false,
                 }),
                 inject: [config_1.ConfigService],
@@ -47,6 +50,9 @@ exports.AppModule = AppModule = __decorate([
             facilities_module_1.FacilitiesModule,
             dashboard_module_1.DashboardModule,
             appointments_module_1.AppointmentsModule,
+            audit_module_1.AuditModule,
+            reports_module_1.ReportsModule,
+            sms_module_1.SmsModule,
         ],
     })
 ], AppModule);

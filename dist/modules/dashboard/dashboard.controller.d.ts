@@ -8,4 +8,24 @@ export declare class DashboardController {
         pendingScreenings: number;
         completedToday: number;
     }>;
+    getExtendedStats(req: any): Promise<{
+        totalScreenings: number;
+        completedScreenings: number;
+        completionRate: number;
+        referrals: number;
+        referralRate: number;
+        thisWeekScreenings: number;
+        thisMonthScreenings: number;
+        upcomingAppointments: number;
+        newClientsThisMonth: number;
+        screeningsByType: any;
+        last7DaysTrend: {
+            date: string;
+            count: number;
+        }[];
+        totalClients: number;
+        todayScreenings: number;
+        pendingScreenings: number;
+        completedToday: number;
+    }>;
 }

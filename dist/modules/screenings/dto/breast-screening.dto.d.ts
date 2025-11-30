@@ -19,6 +19,7 @@ export declare class CreateBreastScreeningDto {
     referralRequired?: boolean;
     referralFacility?: string;
     referralReason?: string;
+    doctorId?: number;
 }
 export declare class UpdateBreastScreeningDto {
     lumpPresent?: boolean;

@@ -3,10 +3,12 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { AuditService } from '../audit/audit.service';
 export declare class AuthService {
     private usersRepository;
     private jwtService;
-    constructor(usersRepository: Repository<User>, jwtService: JwtService);
+    private auditService;
+    constructor(usersRepository: Repository<User>, jwtService: JwtService, auditService: AuditService);
     register(registerDto: RegisterDto): Promise<{
         message: string;
         token: string;
@@ -38,7 +40,7 @@ export declare class AuthService {
         };
         token?: undefined;
     }>;
-    login(loginDto: LoginDto): Promise<{
+    login(loginDto: LoginDto, ipAddress?: string, userAgent?: string): Promise<{
         message: string;
         token: string;
         user: {

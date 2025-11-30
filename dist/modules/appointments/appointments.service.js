@@ -11,38 +11,40 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var AppointmentsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppointmentsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const appointment_entity_1 = require("./entities/appointment.entity");
-let AppointmentsService = class AppointmentsService {
+let AppointmentsService = AppointmentsService_1 = class AppointmentsService {
     constructor(appointmentsRepository) {
         this.appointmentsRepository = appointmentsRepository;
+        this.logger = new common_1.Logger(AppointmentsService_1.name);
     }
     async findAll(facilityId, status, date) {
         const queryBuilder = this.appointmentsRepository
-            .createQueryBuilder('a')
-            .leftJoinAndSelect('a.patient', 'p')
-            .leftJoinAndSelect('a.phcCenter', 'c')
-            .leftJoinAndSelect('a.createdByUser', 'u')
-            .orderBy('a.appointmentDate', 'ASC')
-            .addOrderBy('a.appointmentTime', 'ASC')
+            .createQueryBuilder("a")
+            .leftJoinAndSelect("a.patient", "p")
+            .leftJoinAndSelect("a.phcCenter", "c")
+            .leftJoinAndSelect("a.createdByUser", "u")
+            .orderBy("a.appointmentDate", "ASC")
+            .addOrderBy("a.appointmentTime", "ASC")
             .take(100);
         if (facilityId) {
-            queryBuilder.andWhere('a.phcCenterId = :facilityId', { facilityId });
+            queryBuilder.andWhere("a.phcCenterId = :facilityId", { facilityId });
         }
-        if (status && status !== 'all') {
-            queryBuilder.andWhere('a.status = :status', { status });
+        if (status && status !== "all") {
+            queryBuilder.andWhere("a.status = :status", { status });
         }
         if (date) {
-            queryBuilder.andWhere('a.appointmentDate = :date', { date });
+            queryBuilder.andWhere("a.appointmentDate = :date", { date });
         }
         const appointments = await queryBuilder.getMany();
         return appointments.map((a) => ({
             id: a.id,
-            appointmentId: `APT-${String(a.id).padStart(5, '0')}`,
+            appointmentId: `APT-${String(a.id).padStart(5, "0")}`,
             appointmentDate: a.appointmentDate,
             appointmentTime: a.appointmentTime,
             appointmentType: a.appointmentType,
@@ -52,7 +54,7 @@ let AppointmentsService = class AppointmentsService {
             createdAt: a.createdAt,
             client: {
                 id: a.patientId,
-                clientId: `PAT-${String(a.patientId).padStart(5, '0')}`,
+                clientId: `PAT-${String(a.patientId).padStart(5, "0")}`,
                 firstName: a.patient?.firstName,
                 lastName: a.patient?.lastName,
                 phone: a.patient?.phone,
@@ -67,14 +69,14 @@ let AppointmentsService = class AppointmentsService {
     async findOne(id) {
         const appointment = await this.appointmentsRepository.findOne({
             where: { id },
-            relations: ['patient', 'phcCenter', 'createdByUser'],
+            relations: ["patient", "phcCenter", "createdByUser"],
         });
         if (!appointment) {
-            throw new common_1.NotFoundException('Appointment not found');
+            throw new common_1.NotFoundException("Appointment not found");
         }
         return {
             id: appointment.id,
-            appointmentId: `APT-${String(appointment.id).padStart(5, '0')}`,
+            appointmentId: `APT-${String(appointment.id).padStart(5, "0")}`,
             appointmentDate: appointment.appointmentDate,
             appointmentTime: appointment.appointmentTime,
             appointmentType: appointment.appointmentType,
@@ -84,7 +86,7 @@ let AppointmentsService = class AppointmentsService {
             createdAt: appointment.createdAt,
             client: {
                 id: appointment.patientId,
-                clientId: `PAT-${String(appointment.patientId).padStart(5, '0')}`,
+                clientId: `PAT-${String(appointment.patientId).padStart(5, "0")}`,
                 firstName: appointment.patient?.firstName,
                 lastName: appointment.patient?.lastName,
                 phone: appointment.patient?.phone,
@@ -99,12 +101,12 @@ let AppointmentsService = class AppointmentsService {
     async findByPatient(patientId) {
         const appointments = await this.appointmentsRepository.find({
             where: { patientId },
-            relations: ['phcCenter'],
-            order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+            relations: ["phcCenter"],
+            order: { appointmentDate: "DESC", appointmentTime: "DESC" },
         });
         return appointments.map((a) => ({
             id: a.id,
-            appointmentId: `APT-${String(a.id).padStart(5, '0')}`,
+            appointmentId: `APT-${String(a.id).padStart(5, "0")}`,
             appointmentDate: a.appointmentDate,
             appointmentTime: a.appointmentTime,
             appointmentType: a.appointmentType,
@@ -118,21 +120,25 @@ let AppointmentsService = class AppointmentsService {
         const endDate = new Date();
         endDate.setDate(today.getDate() + days);
         const queryBuilder = this.appointmentsRepository
-            .createQueryBuilder('a')
-            .leftJoinAndSelect('a.patient', 'p')
-            .leftJoinAndSelect('a.phcCenter', 'c')
-            .where('a.appointmentDate >= :today', { today: today.toISOString().split('T')[0] })
-            .andWhere('a.appointmentDate <= :endDate', { endDate: endDate.toISOString().split('T')[0] })
-            .andWhere('a.status = :status', { status: 'scheduled' })
-            .orderBy('a.appointmentDate', 'ASC')
-            .addOrderBy('a.appointmentTime', 'ASC');
+            .createQueryBuilder("a")
+            .leftJoinAndSelect("a.patient", "p")
+            .leftJoinAndSelect("a.phcCenter", "c")
+            .where("a.appointmentDate >= :today", {
+            today: today.toISOString().split("T")[0],
+        })
+            .andWhere("a.appointmentDate <= :endDate", {
+            endDate: endDate.toISOString().split("T")[0],
+        })
+            .andWhere("a.status = :status", { status: "scheduled" })
+            .orderBy("a.appointmentDate", "ASC")
+            .addOrderBy("a.appointmentTime", "ASC");
         if (facilityId) {
-            queryBuilder.andWhere('a.phcCenterId = :facilityId', { facilityId });
+            queryBuilder.andWhere("a.phcCenterId = :facilityId", { facilityId });
         }
         const appointments = await queryBuilder.getMany();
         return appointments.map((a) => ({
             id: a.id,
-            appointmentId: `APT-${String(a.id).padStart(5, '0')}`,
+            appointmentId: `APT-${String(a.id).padStart(5, "0")}`,
             appointmentDate: a.appointmentDate,
             appointmentTime: a.appointmentTime,
             appointmentType: a.appointmentType,
@@ -153,15 +159,15 @@ let AppointmentsService = class AppointmentsService {
             appointmentTime: createDto.appointmentTime,
             appointmentType: createDto.appointmentType,
             reason: createDto.reason || null,
-            status: 'scheduled',
+            status: "scheduled",
             createdBy: userId,
         });
         const saved = await this.appointmentsRepository.save(appointment);
         return {
-            message: 'Appointment scheduled',
+            message: "Appointment scheduled",
             appointment: {
                 id: saved.id,
-                appointmentId: `APT-${String(saved.id).padStart(5, '0')}`,
+                appointmentId: `APT-${String(saved.id).padStart(5, "0")}`,
                 appointmentDate: saved.appointmentDate,
                 appointmentTime: saved.appointmentTime,
                 status: saved.status,
@@ -169,9 +175,11 @@ let AppointmentsService = class AppointmentsService {
         };
     }
     async update(id, updateDto) {
-        const appointment = await this.appointmentsRepository.findOne({ where: { id } });
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
         if (!appointment) {
-            throw new common_1.NotFoundException('Appointment not found');
+            throw new common_1.NotFoundException("Appointment not found");
         }
         if (updateDto.appointmentDate) {
             appointment.appointmentDate = new Date(updateDto.appointmentDate);
@@ -189,34 +197,40 @@ let AppointmentsService = class AppointmentsService {
             appointment.status = updateDto.status;
         }
         await this.appointmentsRepository.save(appointment);
-        return { message: 'Appointment updated' };
+        return { message: "Appointment updated" };
     }
     async cancel(id) {
-        const appointment = await this.appointmentsRepository.findOne({ where: { id } });
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
         if (!appointment) {
-            throw new common_1.NotFoundException('Appointment not found');
+            throw new common_1.NotFoundException("Appointment not found");
         }
-        appointment.status = 'cancelled';
+        appointment.status = "cancelled";
         await this.appointmentsRepository.save(appointment);
-        return { message: 'Appointment cancelled' };
+        return { message: "Appointment cancelled" };
     }
     async complete(id) {
-        const appointment = await this.appointmentsRepository.findOne({ where: { id } });
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
         if (!appointment) {
-            throw new common_1.NotFoundException('Appointment not found');
+            throw new common_1.NotFoundException("Appointment not found");
         }
-        appointment.status = 'completed';
+        appointment.status = "completed";
         await this.appointmentsRepository.save(appointment);
-        return { message: 'Appointment marked as completed' };
+        return { message: "Appointment marked as completed" };
     }
     async markNoShow(id) {
-        const appointment = await this.appointmentsRepository.findOne({ where: { id } });
+        const appointment = await this.appointmentsRepository.findOne({
+            where: { id },
+        });
         if (!appointment) {
-            throw new common_1.NotFoundException('Appointment not found');
+            throw new common_1.NotFoundException("Appointment not found");
         }
-        appointment.status = 'no_show';
+        appointment.status = "no_show";
         await this.appointmentsRepository.save(appointment);
-        return { message: 'Appointment marked as no-show' };
+        return { message: "Appointment marked as no-show" };
     }
     async createFollowup(createDto, userId, facilityId) {
         let reminderScheduledDate = null;
@@ -231,12 +245,12 @@ let AppointmentsService = class AppointmentsService {
             phcCenterId: facilityId || 1,
             screeningId: createDto.screeningId || null,
             appointmentDate: new Date(createDto.followupDate),
-            appointmentTime: createDto.followupTime || '09:00',
+            appointmentTime: createDto.followupTime || "09:00",
             appointmentType: createDto.followupType,
             reason: createDto.followupInstructions || null,
             isFollowup: 1,
             followupInstructions: createDto.followupInstructions || null,
-            status: 'scheduled',
+            status: "scheduled",
             sendSmsReminder: createDto.sendSmsReminder !== false ? 1 : 0,
             reminderDaysBefore: createDto.reminderDaysBefore || 1,
             reminderScheduledDate: reminderScheduledDate,
@@ -244,10 +258,10 @@ let AppointmentsService = class AppointmentsService {
         });
         const saved = await this.appointmentsRepository.save(appointment);
         return {
-            message: 'Follow-up scheduled successfully',
+            message: "Follow-up scheduled successfully",
             followup: {
                 id: saved.id,
-                appointmentId: `FUP-${String(saved.id).padStart(5, '0')}`,
+                appointmentId: `FUP-${String(saved.id).padStart(5, "0")}`,
                 followupDate: saved.appointmentDate,
                 followupTime: saved.appointmentTime,
                 followupType: saved.appointmentType,
@@ -261,12 +275,12 @@ let AppointmentsService = class AppointmentsService {
     async getFollowupsByPatient(patientId) {
         const appointments = await this.appointmentsRepository.find({
             where: { patientId, isFollowup: 1 },
-            relations: ['phcCenter', 'screening'],
-            order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+            relations: ["phcCenter", "screening"],
+            order: { appointmentDate: "DESC", appointmentTime: "DESC" },
         });
         return appointments.map((a) => ({
             id: a.id,
-            appointmentId: `FUP-${String(a.id).padStart(5, '0')}`,
+            appointmentId: `FUP-${String(a.id).padStart(5, "0")}`,
             appointmentDate: a.appointmentDate,
             appointmentTime: a.appointmentTime,
             appointmentType: a.appointmentType,
@@ -288,7 +302,7 @@ let AppointmentsService = class AppointmentsService {
     }
 };
 exports.AppointmentsService = AppointmentsService;
-exports.AppointmentsService = AppointmentsService = __decorate([
+exports.AppointmentsService = AppointmentsService = AppointmentsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(appointment_entity_1.Appointment)),
     __metadata("design:paramtypes", [typeorm_2.Repository])

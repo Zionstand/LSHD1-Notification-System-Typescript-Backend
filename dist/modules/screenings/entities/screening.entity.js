@@ -119,8 +119,8 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ['completed', 'pending', 'follow_up'],
-        default: 'completed',
+        enum: ['completed', 'pending', 'in_progress', 'follow_up'],
+        default: 'pending',
         nullable: true,
     }),
     __metadata("design:type", String)

@@ -17,7 +17,9 @@ let AppointmentsModule = class AppointmentsModule {
 exports.AppointmentsModule = AppointmentsModule;
 exports.AppointmentsModule = AppointmentsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([appointment_entity_1.Appointment])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([appointment_entity_1.Appointment]),
+        ],
         providers: [appointments_service_1.AppointmentsService],
         controllers: [appointments_controller_1.AppointmentsController],
         exports: [appointments_service_1.AppointmentsService],

@@ -32,6 +32,11 @@ export class CreateDiabetesScreeningDto {
   @IsOptional()
   @IsString()
   referralReason?: string;
+
+  // Personnel tracking - who performed the lab test
+  @IsOptional()
+  @IsNumber()
+  labPersonnelId?: number;
 }
 
 export class UpdateDiabetesScreeningDto {

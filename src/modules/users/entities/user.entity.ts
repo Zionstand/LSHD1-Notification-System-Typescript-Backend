@@ -56,6 +56,15 @@ export class User {
   @Column({ name: 'approved_by', nullable: true })
   approvedBy: number;
 
+  @Column({ name: 'failed_login_attempts', type: 'int', default: 0 })
+  failedLoginAttempts: number;
+
+  @Column({ name: 'locked_until', type: 'datetime', nullable: true })
+  lockedUntil: Date | null;
+
+  @Column({ name: 'last_login_at', type: 'datetime', nullable: true })
+  lastLoginAt: Date | null;
+
   @ManyToOne(() => PhcCenter, { nullable: true })
   @JoinColumn({ name: 'phc_center_id' })
   phcCenter: PhcCenter;

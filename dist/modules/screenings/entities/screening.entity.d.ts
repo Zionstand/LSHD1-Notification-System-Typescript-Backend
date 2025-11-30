@@ -1,6 +1,6 @@
 import { Patient } from '../../patients/entities/patient.entity';
 import { User } from '../../users/entities/user.entity';
-export type ScreeningStatus = 'completed' | 'pending' | 'follow_up';
+export type ScreeningStatus = 'completed' | 'pending' | 'in_progress' | 'follow_up';
 export declare class Screening {
     id: number;
     patientId: number;

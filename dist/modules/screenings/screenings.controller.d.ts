@@ -25,6 +25,22 @@ export declare class ScreeningsController {
             pathway: string;
         };
         conductedBy: string | null;
+        vitals: {
+            bloodPressureSystolic: number;
+            bloodPressureDiastolic: number;
+            temperature: number;
+            pulseRate: number;
+            respiratoryRate: number;
+            weight: number;
+            height: number;
+            bmi: number;
+        };
+        results: {
+            diagnosis: string;
+            prescription: string;
+            recommendations: string;
+            nextAppointment: Date;
+        };
     }[]>;
     findByPatient(patientId: string): Promise<{
         id: number;

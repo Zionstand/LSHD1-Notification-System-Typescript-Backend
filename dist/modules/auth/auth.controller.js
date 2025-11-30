@@ -25,8 +25,8 @@ let AuthController = class AuthController {
     async register(registerDto) {
         return this.authService.register(registerDto);
     }
-    async login(loginDto) {
-        return this.authService.login(loginDto);
+    async login(loginDto, ip, userAgent) {
+        return this.authService.login(loginDto, ip, userAgent);
     }
     async getProfile(req) {
         return this.authService.getProfile(req.user.id);
@@ -44,8 +44,10 @@ __decorate([
     (0, common_1.Post)('login'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Ip)()),
+    __param(2, (0, common_1.Headers)('user-agent')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([

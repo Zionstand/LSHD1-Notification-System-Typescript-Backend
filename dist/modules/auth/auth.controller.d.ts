@@ -35,7 +35,7 @@ export declare class AuthController {
         };
         token?: undefined;
     }>;
-    login(loginDto: LoginDto): Promise<{
+    login(loginDto: LoginDto, ip: string, userAgent: string): Promise<{
         message: string;
         token: string;
         user: {

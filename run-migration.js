@@ -1,78 +1,53 @@
+// Run this script to add 'in_progress' status to the screenings table
+// Usage: node run-migration.js
+
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 async function runMigration() {
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '3306'),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'lshd1_screening_db',
+    database: process.env.DB_NAME || 'lshd1_screening',
   });
 
   console.log('Connected to database');
 
   try {
-    // Check if columns already exist
-    const [columns] = await connection.execute(`
-      SELECT COLUMN_NAME
+    // Check current enum values
+    const [columns] = await connection.query(`
+      SELECT COLUMN_TYPE
       FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'screenings'
-    `, [process.env.DB_NAME || 'lshd1_screening_db']);
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'screenings'
+      AND COLUMN_NAME = 'status'
+    `);
 
-    const existingColumns = columns.map(c => c.COLUMN_NAME);
-    console.log('Existing columns:', existingColumns);
+    console.log('Current status column type:', columns[0]?.COLUMN_TYPE);
 
-    // Add patient_status if not exists
-    if (!existingColumns.includes('patient_status')) {
-      console.log('Adding patient_status column...');
-      await connection.execute(`
-        ALTER TABLE screenings
-        ADD COLUMN patient_status VARCHAR(50) NULL AFTER next_appointment
-      `);
-      console.log('patient_status column added');
-    } else {
-      console.log('patient_status column already exists');
-    }
+    // Run the migration
+    await connection.query(`
+      ALTER TABLE screenings
+      MODIFY COLUMN status ENUM('completed', 'pending', 'in_progress', 'follow_up') DEFAULT 'pending'
+    `);
 
-    // Add referral_facility if not exists
-    if (!existingColumns.includes('referral_facility')) {
-      console.log('Adding referral_facility column...');
-      await connection.execute(`
-        ALTER TABLE screenings
-        ADD COLUMN referral_facility VARCHAR(255) NULL AFTER patient_status
-      `);
-      console.log('referral_facility column added');
-    } else {
-      console.log('referral_facility column already exists');
-    }
+    console.log('Migration successful! Added in_progress to status enum.');
 
-    // Add doctor_id if not exists
-    if (!existingColumns.includes('doctor_id')) {
-      console.log('Adding doctor_id column...');
-      await connection.execute(`
-        ALTER TABLE screenings
-        ADD COLUMN doctor_id INT NULL AFTER referral_facility
-      `);
-      console.log('doctor_id column added');
-    } else {
-      console.log('doctor_id column already exists');
-    }
+    // Verify the change
+    const [newColumns] = await connection.query(`
+      SELECT COLUMN_TYPE
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'screenings'
+      AND COLUMN_NAME = 'status'
+    `);
 
-    // Add doctor_assessed_at if not exists
-    if (!existingColumns.includes('doctor_assessed_at')) {
-      console.log('Adding doctor_assessed_at column...');
-      await connection.execute(`
-        ALTER TABLE screenings
-        ADD COLUMN doctor_assessed_at DATETIME NULL AFTER doctor_id
-      `);
-      console.log('doctor_assessed_at column added');
-    } else {
-      console.log('doctor_assessed_at column already exists');
-    }
+    console.log('New status column type:', newColumns[0]?.COLUMN_TYPE);
 
-    console.log('Migration completed successfully!');
   } catch (error) {
-    console.error('Migration error:', error);
+    console.error('Migration failed:', error.message);
   } finally {
     await connection.end();
   }

@@ -37,4 +37,9 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], UpdateVitalsDto.prototype, "temperature", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], UpdateVitalsDto.prototype, "respiratoryRate", void 0);
 //# sourceMappingURL=update-vitals.dto.js.map

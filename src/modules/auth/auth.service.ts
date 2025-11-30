@@ -11,6 +11,10 @@ import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Role, ROLE_LEVELS } from './constants/roles.constant';
+import { AuditService } from '../audit/audit.service';
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
 
 interface JwtPayload {
   id: number;
@@ -25,6 +29,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private auditService: AuditService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -116,22 +121,98 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
     const { email, password } = loginDto;
 
+    // First, find user by email only (to check lockout status)
     const user = await this.usersRepository.findOne({
-      where: { email, status: 'approved' },
+      where: { email },
       relations: ['phcCenter'],
     });
 
     if (!user) {
+      // Log failed login attempt for non-existent user
+      await this.auditService.log({
+        action: 'LOGIN_FAILED',
+        resource: 'USER',
+        details: { email, reason: 'User not found' },
+        ipAddress,
+        userAgent,
+      });
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Check if account is locked
+    if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
+      const remainingMinutes = Math.ceil(
+        (new Date(user.lockedUntil).getTime() - Date.now()) / 60000,
+      );
+      throw new UnauthorizedException(
+        `Account is locked. Please try again in ${remainingMinutes} minute(s).`,
+      );
+    }
+
+    // Check if account is approved
+    if (user.status !== 'approved') {
+      throw new UnauthorizedException(
+        user.status === 'pending'
+          ? 'Your account is pending approval'
+          : 'Your account has been suspended or rejected',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      // Increment failed login attempts
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+
+      // Log failed login attempt
+      await this.auditService.log({
+        userId: user.id,
+        action: 'LOGIN_FAILED',
+        resource: 'USER',
+        resourceId: user.id,
+        details: { reason: 'Invalid password', attempt: user.failedLoginAttempts },
+        ipAddress,
+        userAgent,
+        facilityId: user.phcCenterId,
+      });
+
+      // Lock account if max attempts reached
+      if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
+        user.lockedUntil = new Date(
+          Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000,
+        );
+        await this.usersRepository.save(user);
+        throw new UnauthorizedException(
+          `Account locked due to too many failed attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`,
+        );
+      }
+
+      await this.usersRepository.save(user);
+      const remainingAttempts = MAX_FAILED_ATTEMPTS - user.failedLoginAttempts;
+      throw new UnauthorizedException(
+        `Invalid email or password. ${remainingAttempts} attempt(s) remaining.`,
+      );
     }
+
+    // Reset failed login attempts on successful login
+    user.failedLoginAttempts = 0;
+    user.lockedUntil = null;
+    user.lastLoginAt = new Date();
+    await this.usersRepository.save(user);
+
+    // Log successful login
+    await this.auditService.log({
+      userId: user.id,
+      action: 'LOGIN',
+      resource: 'USER',
+      resourceId: user.id,
+      details: { email: user.email },
+      ipAddress,
+      userAgent,
+      facilityId: user.phcCenterId,
+    });
 
     const payload: JwtPayload = {
       id: user.id,

@@ -51,6 +51,10 @@ export class CreateHypertensionScreeningDto {
   @IsIn(['left', 'right'])
   armUsed3?: 'left' | 'right';
 
+  // Result classification
+  @IsIn(['normal', 'elevated', 'high_stage1', 'high_stage2', 'crisis'])
+  screeningResult: 'normal' | 'elevated' | 'high_stage1' | 'high_stage2' | 'crisis';
+
   // Observations
   @IsOptional()
   @IsString()
@@ -67,9 +71,18 @@ export class CreateHypertensionScreeningDto {
   @IsOptional()
   @IsString()
   referralReason?: string;
+
+  // Personnel tracking - who performed the screening (CHO or nurse)
+  @IsOptional()
+  @IsNumber()
+  conductedById?: number;
 }
 
 export class UpdateHypertensionScreeningDto {
+  @IsOptional()
+  @IsIn(['normal', 'elevated', 'high_stage1', 'high_stage2', 'crisis'])
+  screeningResult?: 'normal' | 'elevated' | 'high_stage1' | 'high_stage2' | 'crisis';
+
   @IsOptional()
   @IsNumber()
   systolicBp1?: number;

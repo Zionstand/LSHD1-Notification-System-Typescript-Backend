@@ -18,4 +18,8 @@ export class UpdateVitalsDto {
   @IsOptional()
   @IsNumber()
   temperature?: number;
+
+  @IsOptional()
+  @IsNumber()
+  respiratoryRate?: number;
 }

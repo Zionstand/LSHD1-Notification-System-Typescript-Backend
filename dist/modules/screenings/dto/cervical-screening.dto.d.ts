@@ -12,6 +12,7 @@ export declare class CreateCervicalScreeningDto {
     followUpRequired?: boolean;
     followUpDate?: string;
     followUpNotes?: string;
+    nurseId?: number;
 }
 export declare class UpdateCervicalScreeningDto {
     screeningPerformed?: boolean;

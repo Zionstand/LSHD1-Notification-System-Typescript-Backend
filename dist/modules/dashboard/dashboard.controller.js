@@ -23,6 +23,9 @@ let DashboardController = class DashboardController {
     async getStats(req) {
         return this.dashboardService.getStats(req.user.facility_id);
     }
+    async getExtendedStats(req) {
+        return this.dashboardService.getExtendedStats(req.user.facility_id);
+    }
 };
 exports.DashboardController = DashboardController;
 __decorate([
@@ -32,6 +35,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)('extended-stats'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], DashboardController.prototype, "getExtendedStats", null);
 exports.DashboardController = DashboardController = __decorate([
     (0, common_1.Controller)('dashboard'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

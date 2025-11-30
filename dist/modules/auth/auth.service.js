@@ -20,10 +20,14 @@ const typeorm_2 = require("typeorm");
 const bcrypt = require("bcryptjs");
 const user_entity_1 = require("../users/entities/user.entity");
 const roles_constant_1 = require("./constants/roles.constant");
+const audit_service_1 = require("../audit/audit.service");
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
 let AuthService = class AuthService {
-    constructor(usersRepository, jwtService) {
+    constructor(usersRepository, jwtService, auditService) {
         this.usersRepository = usersRepository;
         this.jwtService = jwtService;
+        this.auditService = auditService;
     }
     async register(registerDto) {
         const { email, password, fullName, phone, role, phcCenterId, staffId } = registerDto;
@@ -93,19 +97,67 @@ let AuthService = class AuthService {
             },
         };
     }
-    async login(loginDto) {
+    async login(loginDto, ipAddress, userAgent) {
         const { email, password } = loginDto;
         const user = await this.usersRepository.findOne({
-            where: { email, status: 'approved' },
+            where: { email },
             relations: ['phcCenter'],
         });
         if (!user) {
+            await this.auditService.log({
+                action: 'LOGIN_FAILED',
+                resource: 'USER',
+                details: { email, reason: 'User not found' },
+                ipAddress,
+                userAgent,
+            });
             throw new common_1.UnauthorizedException('Invalid email or password');
+        }
+        if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
+            const remainingMinutes = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
+            throw new common_1.UnauthorizedException(`Account is locked. Please try again in ${remainingMinutes} minute(s).`);
+        }
+        if (user.status !== 'approved') {
+            throw new common_1.UnauthorizedException(user.status === 'pending'
+                ? 'Your account is pending approval'
+                : 'Your account has been suspended or rejected');
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            throw new common_1.UnauthorizedException('Invalid email or password');
+            user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+            await this.auditService.log({
+                userId: user.id,
+                action: 'LOGIN_FAILED',
+                resource: 'USER',
+                resourceId: user.id,
+                details: { reason: 'Invalid password', attempt: user.failedLoginAttempts },
+                ipAddress,
+                userAgent,
+                facilityId: user.phcCenterId,
+            });
+            if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
+                user.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+                await this.usersRepository.save(user);
+                throw new common_1.UnauthorizedException(`Account locked due to too many failed attempts. Please try again in ${LOCKOUT_DURATION_MINUTES} minutes.`);
+            }
+            await this.usersRepository.save(user);
+            const remainingAttempts = MAX_FAILED_ATTEMPTS - user.failedLoginAttempts;
+            throw new common_1.UnauthorizedException(`Invalid email or password. ${remainingAttempts} attempt(s) remaining.`);
         }
+        user.failedLoginAttempts = 0;
+        user.lockedUntil = null;
+        user.lastLoginAt = new Date();
+        await this.usersRepository.save(user);
+        await this.auditService.log({
+            userId: user.id,
+            action: 'LOGIN',
+            resource: 'USER',
+            resourceId: user.id,
+            details: { email: user.email },
+            ipAddress,
+            userAgent,
+            facilityId: user.phcCenterId,
+        });
         const payload = {
             id: user.id,
             email: user.email,
@@ -163,6 +215,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        audit_service_1.AuditService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const patient_entity_1 = require("../patients/entities/patient.entity");
 const screening_entity_1 = require("../screenings/entities/screening.entity");
+const appointment_entity_1 = require("../appointments/entities/appointment.entity");
 const dashboard_service_1 = require("./dashboard.service");
 const dashboard_controller_1 = require("./dashboard.controller");
 let DashboardModule = class DashboardModule {
@@ -18,7 +19,7 @@ let DashboardModule = class DashboardModule {
 exports.DashboardModule = DashboardModule;
 exports.DashboardModule = DashboardModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([patient_entity_1.Patient, screening_entity_1.Screening])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([patient_entity_1.Patient, screening_entity_1.Screening, appointment_entity_1.Appointment])],
         providers: [dashboard_service_1.DashboardService],
         controllers: [dashboard_controller_1.DashboardController],
     })

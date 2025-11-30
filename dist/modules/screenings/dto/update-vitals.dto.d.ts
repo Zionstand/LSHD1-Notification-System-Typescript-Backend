@@ -4,4 +4,5 @@ export declare class UpdateVitalsDto {
     weight?: number;
     pulseRate?: number;
     temperature?: number;
+    respiratoryRate?: number;
 }

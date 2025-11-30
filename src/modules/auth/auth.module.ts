@@ -18,7 +18,7 @@ import { User } from '../users/entities/user.entity';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET') || 'your-secret-key',
-        signOptions: { expiresIn: '24h' },
+        signOptions: { expiresIn: '30m' }, // 30 minute session timeout per security requirements
       }),
       inject: [ConfigService],
     }),

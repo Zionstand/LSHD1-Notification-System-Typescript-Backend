@@ -79,6 +79,18 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "approvedBy", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'failed_login_attempts', type: 'int', default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "failedLoginAttempts", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'locked_until', type: 'datetime', nullable: true }),
+    __metadata("design:type", Object)
+], User.prototype, "lockedUntil", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'last_login_at', type: 'datetime', nullable: true }),
+    __metadata("design:type", Object)
+], User.prototype, "lastLoginAt", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => phc_center_entity_1.PhcCenter, { nullable: true }),
     (0, typeorm_1.JoinColumn)({ name: 'phc_center_id' }),
     __metadata("design:type", phc_center_entity_1.PhcCenter)

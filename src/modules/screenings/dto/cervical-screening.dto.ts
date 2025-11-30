@@ -49,6 +49,11 @@ export class CreateCervicalScreeningDto {
   @IsOptional()
   @IsString()
   followUpNotes?: string;
+
+  // Personnel tracking - who performed the screening
+  @IsOptional()
+  @IsNumber()
+  nurseId?: number;
 }
 
 export class UpdateCervicalScreeningDto {

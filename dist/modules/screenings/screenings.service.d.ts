@@ -1,11 +1,12 @@
-import { Repository } from 'typeorm';
-import { Screening } from './entities/screening.entity';
-import { CreateScreeningDto } from './dto/create-screening.dto';
-import { UpdateVitalsDto } from './dto/update-vitals.dto';
-import { CompleteScreeningDto } from './dto/complete-screening.dto';
-import { DoctorAssessmentDto } from './dto/doctor-assessment.dto';
+import { Repository } from "typeorm";
+import { Screening } from "./entities/screening.entity";
+import { CreateScreeningDto } from "./dto/create-screening.dto";
+import { UpdateVitalsDto } from "./dto/update-vitals.dto";
+import { CompleteScreeningDto } from "./dto/complete-screening.dto";
+import { DoctorAssessmentDto } from "./dto/doctor-assessment.dto";
 export declare class ScreeningsService {
     private screeningsRepository;
+    private readonly logger;
     constructor(screeningsRepository: Repository<Screening>);
     findAll(facilityId?: number, status?: string): Promise<{
         id: number;
@@ -26,6 +27,22 @@ export declare class ScreeningsService {
             pathway: string;
         };
         conductedBy: string | null;
+        vitals: {
+            bloodPressureSystolic: number;
+            bloodPressureDiastolic: number;
+            temperature: number;
+            pulseRate: number;
+            respiratoryRate: number;
+            weight: number;
+            height: number;
+            bmi: number;
+        };
+        results: {
+            diagnosis: string;
+            prescription: string;
+            recommendations: string;
+            nextAppointment: Date;
+        };
     }[]>;
     findOne(id: number): Promise<{
         id: number;

@@ -80,6 +80,11 @@ export class CreateBreastScreeningDto {
   @IsOptional()
   @IsString()
   referralReason?: string;
+
+  // Personnel tracking - who performed the clinical exam
+  @IsOptional()
+  @IsNumber()
+  doctorId?: number;
 }
 
 export class UpdateBreastScreeningDto {

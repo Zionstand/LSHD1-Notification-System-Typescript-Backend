@@ -14,6 +14,9 @@ export declare class User {
     createdAt: Date;
     approvedAt: Date;
     approvedBy: number;
+    failedLoginAttempts: number;
+    lockedUntil: Date | null;
+    lastLoginAt: Date | null;
     phcCenter: PhcCenter;
     get firstName(): string;
     get lastName(): string;

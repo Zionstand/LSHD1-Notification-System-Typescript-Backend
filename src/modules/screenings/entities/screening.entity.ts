@@ -10,7 +10,7 @@ import {
 import { Patient } from '../../patients/entities/patient.entity';
 import { User } from '../../users/entities/user.entity';
 
-export type ScreeningStatus = 'completed' | 'pending' | 'follow_up';
+export type ScreeningStatus = 'completed' | 'pending' | 'in_progress' | 'follow_up';
 
 @Entity('screenings')
 export class Screening {
@@ -94,8 +94,8 @@ export class Screening {
 
   @Column({
     type: 'enum',
-    enum: ['completed', 'pending', 'follow_up'],
-    default: 'completed',
+    enum: ['completed', 'pending', 'in_progress', 'follow_up'],
+    default: 'pending',
     nullable: true,
   })
   status: ScreeningStatus;

@@ -8,6 +8,7 @@ export declare class CreateDiabetesScreeningDto {
     clinicalObservations?: string;
     referToDoctor?: boolean;
     referralReason?: string;
+    labPersonnelId?: number;
 }
 export declare class UpdateDiabetesScreeningDto {
     testType?: 'random' | 'fasting';
