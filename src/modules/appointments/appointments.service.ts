@@ -308,18 +308,6 @@ export class AppointmentsService {
 
     const saved = await this.appointmentsRepository.save(appointment);
 
-    // // Send SMS notification about the scheduled follow-up
-    // try {
-    //   const smsResult = await this.notificationsService.sendFollowupScheduledSms(
-    //     saved.id,
-    //     userId,
-    //   );
-    //   this.logger.log(`SMS notification for follow-up ${saved.id}: ${smsResult.message}`);
-    // } catch (error) {
-    //   // Log error but don't fail the follow-up creation
-    //   this.logger.error(`Failed to send SMS for follow-up ${saved.id}: ${error.message}`);
-    // }
-
     return {
       message: "Follow-up scheduled successfully",
       followup: {
