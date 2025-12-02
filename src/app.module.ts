@@ -11,6 +11,7 @@ import { AppointmentsModule } from "./modules/appointments/appointments.module";
 import { AuditModule } from "./modules/audit/audit.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { SmsModule } from "./modules/sms/sms.module";
+import { VitalsModule } from "./modules/vitals/vitals.module";
 // import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -42,6 +43,7 @@ import { SmsModule } from "./modules/sms/sms.module";
     AuditModule,
     ReportsModule,
     SmsModule,
+    VitalsModule,
     // NotificationsModule,
   ],
 })

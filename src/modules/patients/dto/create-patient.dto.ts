@@ -24,11 +24,13 @@ export class CreatePatientDto {
   @IsNumber()
   screeningTypeId: number;
 
+  @IsOptional()
   @IsString()
-  nextOfKin: string;
+  nextOfKin?: string;
 
+  @IsOptional()
   @IsString()
-  nextOfKinPhone: string;
+  nextOfKinPhone?: string;
 
   @IsOptional()
   @IsString()

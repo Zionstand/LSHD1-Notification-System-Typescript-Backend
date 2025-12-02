@@ -60,5 +60,6 @@ export declare class NotificationTypesController {
         id: number;
         name: string;
         pathway: string;
+        gender: string;
     }[]>;
 }

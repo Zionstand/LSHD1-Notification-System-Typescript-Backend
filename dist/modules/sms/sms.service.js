@@ -85,6 +85,7 @@ let SmsService = SmsService_1 = class SmsService {
     async sendScreeningResultSms(patientId, screeningType, result, sentBy, facilityId) {
         const patient = await this.patientRepository.findOne({
             where: { id: patientId },
+            relations: ['phcCenter'],
         });
         if (!patient || !patient.phone) {
             this.logger.warn(`Cannot send SMS: Patient ${patientId} not found or has no phone number`);
@@ -92,14 +93,15 @@ let SmsService = SmsService_1 = class SmsService {
         }
         const resultText = this.getResultText(result);
         const screeningName = this.getScreeningName(screeningType);
-        const message = `Dear ${patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit your healthcare facility for more information. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(patient.phcCenter);
+        const message = `Dear ${patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
         return this.sendSms({
             phoneNumber: patient.phone,
             message,
             smsType: 'SCREENING_RESULT',
             patientId,
             sentBy,
-            facilityId,
+            facilityId: facilityId || patient.phcCenterId,
             relatedEntity: screeningType,
             relatedEntityId: patientId,
         });
@@ -107,7 +109,7 @@ let SmsService = SmsService_1 = class SmsService {
     async sendAppointmentReminderSms(appointmentId) {
         const appointment = await this.appointmentRepository.findOne({
             where: { id: appointmentId },
-            relations: ['patient'],
+            relations: ['patient', 'phcCenter'],
         });
         if (!appointment || !appointment.patient?.phone) {
             this.logger.warn(`Cannot send reminder: Appointment ${appointmentId} not found or patient has no phone`);
@@ -121,7 +123,8 @@ let SmsService = SmsService_1 = class SmsService {
             day: 'numeric',
         });
         const timeStr = appointment.appointmentTime || 'scheduled time';
-        const message = `Reminder: Dear ${appointment.patient.firstName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
+        const message = `Reminder: Dear ${appointment.patient.firstName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
         const result = await this.sendSms({
             phoneNumber: appointment.patient.phone,
             message,
@@ -154,8 +157,8 @@ let SmsService = SmsService_1 = class SmsService {
             day: 'numeric',
         });
         const timeStr = appointment.appointmentTime || 'to be confirmed';
-        const facilityName = appointment.phcCenter?.centerName || 'your healthcare facility';
-        const message = `Your ${appointment.appointmentType} appointment has been scheduled for ${dateStr} at ${timeStr} at ${facilityName}. Please bring your ID. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
+        const message = `Your ${appointment.appointmentType} appointment has been scheduled for ${dateStr} at ${timeStr} at ${facilityInfo}. Please bring your ID. - LSHD1 Screening Program`;
         return this.sendSms({
             phoneNumber: appointment.patient.phone,
             message,
@@ -170,6 +173,7 @@ let SmsService = SmsService_1 = class SmsService {
     async sendFollowUpReminderSms(patientId, screeningType, dueDate, facilityId) {
         const patient = await this.patientRepository.findOne({
             where: { id: patientId },
+            relations: ['phcCenter'],
         });
         if (!patient || !patient.phone) {
             this.logger.warn(`Cannot send follow-up: Patient ${patientId} not found or has no phone`);
@@ -181,13 +185,14 @@ let SmsService = SmsService_1 = class SmsService {
             day: 'numeric',
         });
         const screeningName = this.getScreeningName(screeningType);
-        const message = `Dear ${patient.firstName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit your healthcare facility or call to schedule an appointment. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(patient.phcCenter);
+        const message = `Dear ${patient.firstName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit ${facilityInfo} or call to schedule an appointment. - LSHD1 Screening Program`;
         return this.sendSms({
             phoneNumber: patient.phone,
             message,
             smsType: 'FOLLOW_UP_REMINDER',
             patientId,
-            facilityId,
+            facilityId: facilityId || patient.phcCenterId,
             relatedEntity: screeningType,
         });
     }
@@ -309,6 +314,17 @@ let SmsService = SmsService_1 = class SmsService {
         };
         return typeMap[type] || type;
     }
+    getFacilityInfo(phcCenter) {
+        if (!phcCenter) {
+            return 'your healthcare facility';
+        }
+        const name = phcCenter.centerName || 'your healthcare facility';
+        const address = phcCenter.address;
+        if (address) {
+            return `${name}, ${address}`;
+        }
+        return name;
+    }
     async sendManualSmsToPatient(patientId, message, sentBy, facilityId) {
         const patient = await this.patientRepository.findOne({
             where: { id: patientId },
@@ -323,13 +339,13 @@ let SmsService = SmsService_1 = class SmsService {
             smsType: 'GENERAL',
             patientId,
             sentBy,
-            facilityId,
+            facilityId: facilityId || patient.phcCenterId,
         });
     }
     async sendScreeningSmsById(screeningId, sentBy, facilityId) {
         const screening = await this.screeningRepository.findOne({
             where: { id: screeningId },
-            relations: ['patient'],
+            relations: ['patient', 'patient.phcCenter'],
         });
         if (!screening || !screening.patient?.phone) {
             this.logger.warn(`Cannot send SMS: Screening ${screeningId} not found or patient has no phone`);
@@ -337,14 +353,15 @@ let SmsService = SmsService_1 = class SmsService {
         }
         const screeningName = this.getScreeningName(screening.screeningType);
         const resultText = this.getResultText(screening.patientStatus || 'pending');
-        const message = `Dear ${screening.patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit your healthcare facility for more information. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(screening.patient.phcCenter);
+        const message = `Dear ${screening.patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
         const result = await this.sendSms({
             phoneNumber: screening.patient.phone,
             message,
             smsType: 'SCREENING_RESULT',
             patientId: screening.patientId,
             sentBy,
-            facilityId,
+            facilityId: facilityId || screening.patient.phcCenterId,
             relatedEntity: 'SCREENING',
             relatedEntityId: screeningId,
         });
@@ -371,8 +388,8 @@ let SmsService = SmsService_1 = class SmsService {
             day: 'numeric',
         });
         const timeStr = appointment.appointmentTime || 'scheduled time';
-        const facilityName = appointment.phcCenter?.centerName || 'your healthcare facility';
-        const message = `Dear ${appointment.patient.firstName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityName}. Please don't forget to attend. - LSHD1 Screening Program`;
+        const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
+        const message = `Dear ${appointment.patient.firstName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please don't forget to attend. - LSHD1 Screening Program`;
         return this.sendSms({
             phoneNumber: appointment.patient.phone,
             message,

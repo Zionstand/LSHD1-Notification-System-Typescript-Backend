@@ -53,5 +53,6 @@ export declare class FacilitiesService {
         id: number;
         name: string;
         pathway: string;
+        gender: string;
     }[];
 }

@@ -128,11 +128,11 @@ let FacilitiesService = class FacilitiesService {
     }
     getNotificationTypes() {
         return [
-            { id: 1, name: 'Hypertension Screening', pathway: 'hypertension' },
-            { id: 2, name: 'Diabetes Screening', pathway: 'diabetes' },
-            { id: 3, name: 'Cervical Cancer Screening', pathway: 'cervical' },
-            { id: 4, name: 'Breast Cancer Screening', pathway: 'breast' },
-            { id: 5, name: 'PSA Screening', pathway: 'psa' },
+            { id: 1, name: 'Hypertension Screening', pathway: 'hypertension', gender: 'all' },
+            { id: 2, name: 'Diabetes Screening', pathway: 'diabetes', gender: 'all' },
+            { id: 3, name: 'Cervical Cancer Screening', pathway: 'cervical', gender: 'female' },
+            { id: 4, name: 'Breast Cancer Screening', pathway: 'breast', gender: 'female' },
+            { id: 5, name: 'PSA Screening', pathway: 'psa', gender: 'male' },
         ];
     }
 };

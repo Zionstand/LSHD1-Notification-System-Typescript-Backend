@@ -20,6 +20,7 @@ const appointments_module_1 = require("./modules/appointments/appointments.modul
 const audit_module_1 = require("./modules/audit/audit.module");
 const reports_module_1 = require("./modules/reports/reports.module");
 const sms_module_1 = require("./modules/sms/sms.module");
+const vitals_module_1 = require("./modules/vitals/vitals.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -53,6 +54,7 @@ exports.AppModule = AppModule = __decorate([
             audit_module_1.AuditModule,
             reports_module_1.ReportsModule,
             sms_module_1.SmsModule,
+            vitals_module_1.VitalsModule,
         ],
     })
 ], AppModule);

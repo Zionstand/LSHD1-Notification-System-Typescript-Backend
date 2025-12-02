@@ -6,8 +6,8 @@ export declare class CreatePatientDto {
     phcCenterId: number;
     address: string;
     screeningTypeId: number;
-    nextOfKin: string;
-    nextOfKinPhone: string;
+    nextOfKin?: string;
+    nextOfKinPhone?: string;
     email?: string;
     altPhone?: string;
     lga?: string;

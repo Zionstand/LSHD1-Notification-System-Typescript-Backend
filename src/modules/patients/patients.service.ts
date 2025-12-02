@@ -51,6 +51,7 @@ export class PatientsService {
       next_of_kin_phone: p.nextOfKinPhone || p.emergencyPhone || '',
       facility_id: p.phcCenterId,
       facility_name: p.phcCenter?.centerName || null,
+      facility_address: p.phcCenter?.address || null,
       lga: p.lga,
       created_at: p.createdAt,
     };

@@ -20,6 +20,7 @@ export declare class PatientsService {
         next_of_kin_phone: string;
         facility_id: number;
         facility_name: string | null;
+        facility_address: string | null;
         lga: string;
         created_at: Date;
     }[]>;
@@ -38,6 +39,7 @@ export declare class PatientsService {
         next_of_kin_phone: string;
         facility_id: number;
         facility_name: string | null;
+        facility_address: string | null;
         lga: string;
         created_at: Date;
     }>;
@@ -58,6 +60,7 @@ export declare class PatientsService {
             next_of_kin_phone: string;
             facility_id: number;
             facility_name: string | null;
+            facility_address: string | null;
             lga: string;
             created_at: Date;
         };

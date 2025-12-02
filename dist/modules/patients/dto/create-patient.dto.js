@@ -45,10 +45,12 @@ __decorate([
     __metadata("design:type", Number)
 ], CreatePatientDto.prototype, "screeningTypeId", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePatientDto.prototype, "nextOfKin", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePatientDto.prototype, "nextOfKinPhone", void 0);

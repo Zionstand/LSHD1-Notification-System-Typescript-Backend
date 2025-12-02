@@ -134,6 +134,7 @@ export class SmsService {
   ): Promise<SmsLog | null> {
     const patient = await this.patientRepository.findOne({
       where: { id: patientId },
+      relations: ['phcCenter'],
     });
 
     if (!patient || !patient.phone) {
@@ -143,8 +144,9 @@ export class SmsService {
 
     const resultText = this.getResultText(result);
     const screeningName = this.getScreeningName(screeningType);
+    const facilityInfo = this.getFacilityInfo(patient.phcCenter);
 
-    const message = `Dear ${patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit your healthcare facility for more information. - LSHD1 Screening Program`;
+    const message = `Dear ${patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: patient.phone,
@@ -152,7 +154,7 @@ export class SmsService {
       smsType: 'SCREENING_RESULT',
       patientId,
       sentBy,
-      facilityId,
+      facilityId: facilityId || patient.phcCenterId,
       relatedEntity: screeningType,
       relatedEntityId: patientId,
     });
@@ -164,7 +166,7 @@ export class SmsService {
   async sendAppointmentReminderSms(appointmentId: number): Promise<SmsLog | null> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id: appointmentId },
-      relations: ['patient'],
+      relations: ['patient', 'phcCenter'],
     });
 
     if (!appointment || !appointment.patient?.phone) {
@@ -180,8 +182,9 @@ export class SmsService {
       day: 'numeric',
     });
     const timeStr = appointment.appointmentTime || 'scheduled time';
+    const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
 
-    const message = `Reminder: Dear ${appointment.patient.firstName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
+    const message = `Reminder: Dear ${appointment.patient.firstName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
 
     const result = await this.sendSms({
       phoneNumber: appointment.patient.phone,
@@ -227,9 +230,9 @@ export class SmsService {
       day: 'numeric',
     });
     const timeStr = appointment.appointmentTime || 'to be confirmed';
-    const facilityName = appointment.phcCenter?.centerName || 'your healthcare facility';
+    const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
 
-    const message = `Your ${appointment.appointmentType} appointment has been scheduled for ${dateStr} at ${timeStr} at ${facilityName}. Please bring your ID. - LSHD1 Screening Program`;
+    const message = `Your ${appointment.appointmentType} appointment has been scheduled for ${dateStr} at ${timeStr} at ${facilityInfo}. Please bring your ID. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: appointment.patient.phone,
@@ -254,6 +257,7 @@ export class SmsService {
   ): Promise<SmsLog | null> {
     const patient = await this.patientRepository.findOne({
       where: { id: patientId },
+      relations: ['phcCenter'],
     });
 
     if (!patient || !patient.phone) {
@@ -267,15 +271,16 @@ export class SmsService {
       day: 'numeric',
     });
     const screeningName = this.getScreeningName(screeningType);
+    const facilityInfo = this.getFacilityInfo(patient.phcCenter);
 
-    const message = `Dear ${patient.firstName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit your healthcare facility or call to schedule an appointment. - LSHD1 Screening Program`;
+    const message = `Dear ${patient.firstName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit ${facilityInfo} or call to schedule an appointment. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: patient.phone,
       message,
       smsType: 'FOLLOW_UP_REMINDER',
       patientId,
-      facilityId,
+      facilityId: facilityId || patient.phcCenterId,
       relatedEntity: screeningType,
     });
   }
@@ -459,6 +464,24 @@ export class SmsService {
     return typeMap[type] || type;
   }
 
+  /**
+   * Get facility info string with name and address
+   */
+  private getFacilityInfo(phcCenter?: { centerName?: string; address?: string }): string {
+    if (!phcCenter) {
+      return 'your healthcare facility';
+    }
+
+    const name = phcCenter.centerName || 'your healthcare facility';
+    const address = phcCenter.address;
+
+    if (address) {
+      return `${name}, ${address}`;
+    }
+
+    return name;
+  }
+
   // ==================== FRONTEND-COMPATIBLE METHODS ====================
 
   /**
@@ -485,7 +508,7 @@ export class SmsService {
       smsType: 'GENERAL',
       patientId,
       sentBy,
-      facilityId,
+      facilityId: facilityId || patient.phcCenterId,
     });
   }
 
@@ -499,7 +522,7 @@ export class SmsService {
   ): Promise<SmsLog | null> {
     const screening = await this.screeningRepository.findOne({
       where: { id: screeningId },
-      relations: ['patient'],
+      relations: ['patient', 'patient.phcCenter'],
     });
 
     if (!screening || !screening.patient?.phone) {
@@ -509,8 +532,9 @@ export class SmsService {
 
     const screeningName = this.getScreeningName(screening.screeningType);
     const resultText = this.getResultText(screening.patientStatus || 'pending');
+    const facilityInfo = this.getFacilityInfo(screening.patient.phcCenter);
 
-    const message = `Dear ${screening.patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit your healthcare facility for more information. - LSHD1 Screening Program`;
+    const message = `Dear ${screening.patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
 
     const result = await this.sendSms({
       phoneNumber: screening.patient.phone,
@@ -518,7 +542,7 @@ export class SmsService {
       smsType: 'SCREENING_RESULT',
       patientId: screening.patientId,
       sentBy,
-      facilityId,
+      facilityId: facilityId || screening.patient.phcCenterId,
       relatedEntity: 'SCREENING',
       relatedEntityId: screeningId,
     });
@@ -558,9 +582,9 @@ export class SmsService {
       day: 'numeric',
     });
     const timeStr = appointment.appointmentTime || 'scheduled time';
-    const facilityName = appointment.phcCenter?.centerName || 'your healthcare facility';
+    const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
 
-    const message = `Dear ${appointment.patient.firstName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityName}. Please don't forget to attend. - LSHD1 Screening Program`;
+    const message = `Dear ${appointment.patient.firstName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please don't forget to attend. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: appointment.patient.phone,

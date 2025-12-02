@@ -54,6 +54,7 @@ export declare class SmsService {
     private formatPhoneNumber;
     private getResultText;
     private getScreeningName;
+    private getFacilityInfo;
     sendManualSmsToPatient(patientId: number, message: string, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
     sendScreeningSmsById(screeningId: number, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
     sendFollowupSmsById(appointmentId: number, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
