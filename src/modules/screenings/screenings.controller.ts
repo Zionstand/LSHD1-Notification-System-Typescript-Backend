@@ -15,9 +15,12 @@ import { UpdateVitalsDto } from './dto/update-vitals.dto';
 import { CompleteScreeningDto } from './dto/complete-screening.dto';
 import { DoctorAssessmentDto } from './dto/doctor-assessment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/constants/roles.constant';
 
 @Controller('screenings')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ScreeningsController {
   constructor(private screeningsService: ScreeningsService) {}
 
@@ -45,7 +48,11 @@ export class ScreeningsController {
     );
   }
 
+  /**
+   * Update vitals - Not allowed for HIM Officers (they can only view)
+   */
   @Put(':id/vitals')
+  @Roles(Role.ADMIN, Role.NURSE, Role.DOCTOR, Role.CHO, Role.MLS)
   async updateVitals(
     @Param('id') id: string,
     @Body() updateDto: UpdateVitalsDto,
@@ -53,7 +60,11 @@ export class ScreeningsController {
     return this.screeningsService.updateVitals(+id, updateDto);
   }
 
+  /**
+   * Complete screening - Not allowed for HIM Officers
+   */
   @Put(':id/complete')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   async complete(
     @Param('id') id: string,
     @Body() completeDto: CompleteScreeningDto,
@@ -66,7 +77,11 @@ export class ScreeningsController {
     return this.screeningsService.findPendingDoctorReview(req.user.facility_id);
   }
 
+  /**
+   * Add doctor assessment - Only Doctors and Admins
+   */
   @Put(':id/doctor-assessment')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   async addDoctorAssessment(
     @Param('id') id: string,
     @Body() dto: DoctorAssessmentDto,

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Repository, LessThanOrEqual } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { Twilio } from 'twilio';
 import { SmsLog, SmsType, SmsStatus } from './entities/sms-log.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
@@ -19,22 +19,11 @@ interface SendSmsParams {
   relatedEntityId?: number;
 }
 
-interface SendchampResponse {
-  status: string;
-  message: string;
-  data?: {
-    id: string;
-    reference: string;
-    status: string;
-  };
-}
-
 @Injectable()
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
-  private readonly senderName: string;
+  private readonly twilioClient: Twilio;
+  private readonly twilioPhoneNumber: string;
 
   constructor(
     @InjectRepository(SmsLog)
@@ -47,13 +36,24 @@ export class SmsService {
     private screeningRepository: Repository<Screening>,
     private configService: ConfigService,
   ) {
-    this.baseUrl = this.configService.get<string>('SENDCHAMP_BASE_URL') || 'https://api.sendchamp.com/api/v1';
-    this.apiKey = this.configService.get<string>('SENDCHAMP_API_KEY') || '';
-    this.senderName = this.configService.get<string>('SENDCHAMP_SENDER_NAME') || 'LSHD1';
+    // Try ConfigService first, fallback to process.env
+    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID') || process.env.TWILIO_ACCOUNT_SID;
+    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN') || process.env.TWILIO_AUTH_TOKEN;
+    this.twilioPhoneNumber = this.configService.get<string>('TWILIO_PHONE_NUMBER') || process.env.TWILIO_PHONE_NUMBER || '';
+
+    this.logger.log(`Twilio Config - SID: ${accountSid ? accountSid.substring(0, 10) + '...' : 'NOT SET'}, Token: ${authToken ? '***SET***' : 'NOT SET'}, Phone: ${this.twilioPhoneNumber}`);
+
+    if (!accountSid || !authToken) {
+      this.logger.warn('Twilio credentials not configured. SMS sending will be disabled.');
+      // Create a dummy client that will fail gracefully
+      this.twilioClient = new Twilio('', '');
+    } else {
+      this.twilioClient = new Twilio(accountSid, authToken);
+    }
   }
 
   /**
-   * Send SMS via Sendchamp API
+   * Send SMS via Twilio API
    */
   async sendSms(params: SendSmsParams): Promise<SmsLog> {
     const {
@@ -67,7 +67,7 @@ export class SmsService {
       relatedEntityId,
     } = params;
 
-    // Format phone number (ensure it starts with country code)
+    // Format phone number (ensure it has + prefix for Twilio)
     const formattedPhone = this.formatPhoneNumber(phoneNumber);
 
     // Create SMS log entry
@@ -86,36 +86,32 @@ export class SmsService {
     await this.smsLogRepository.save(smsLog);
 
     try {
-      const response = await axios.post<SendchampResponse>(
-        `${this.baseUrl}/sms/send`,
-        {
-          to: [formattedPhone],
-          message,
-          sender_name: this.senderName,
-          route: 'dnd', // Use DND route for transactional messages
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      this.logger.log(`Twilio: Sending SMS to ${formattedPhone} from ${this.twilioPhoneNumber}, msgLen=${message.length}`);
 
-      if (response.data.status === 'success' && response.data.data) {
+      const twilioMessage = await this.twilioClient.messages.create({
+        body: message,
+        from: this.twilioPhoneNumber,
+        to: formattedPhone,
+      });
+
+      this.logger.log(`Twilio Response: SID=${twilioMessage.sid}, Status=${twilioMessage.status}`);
+
+      if (twilioMessage.sid) {
         smsLog.status = 'SENT';
-        smsLog.sendchampReference = response.data.data.reference;
+        smsLog.sendchampReference = twilioMessage.sid; // Reusing this field for Twilio SID
         smsLog.sentAt = new Date();
-        this.logger.log(`SMS sent successfully to ${formattedPhone}`);
+        this.logger.log(`SMS sent successfully to ${formattedPhone}, SID: ${twilioMessage.sid}`);
       } else {
         smsLog.status = 'FAILED';
-        smsLog.errorMessage = response.data.message || 'Unknown error';
-        this.logger.warn(`SMS failed: ${smsLog.errorMessage}`);
+        smsLog.errorMessage = 'No message SID returned';
+        this.logger.warn(`SMS failed: No message SID returned`);
       }
     } catch (error: any) {
       smsLog.status = 'FAILED';
-      smsLog.errorMessage = error.response?.data?.message || error.message || 'API request failed';
-      this.logger.error(`SMS sending error: ${smsLog.errorMessage}`);
+      const errorMessage = error.message || 'Unknown Twilio error';
+      const errorCode = error.code || 'UNKNOWN';
+      smsLog.errorMessage = `[${errorCode}] ${errorMessage}`;
+      this.logger.error(`SMS sending error to ${formattedPhone}: [${errorCode}] ${errorMessage}`);
     }
 
     await this.smsLogRepository.save(smsLog);
@@ -145,8 +141,9 @@ export class SmsService {
     const resultText = this.getResultText(result);
     const screeningName = this.getScreeningName(screeningType);
     const facilityInfo = this.getFacilityInfo(patient.phcCenter);
+    const patientName = this.getPatientName(patient);
 
-    const message = `Dear ${patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
+    const message = `Dear ${patientName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: patient.phone,
@@ -183,8 +180,9 @@ export class SmsService {
     });
     const timeStr = appointment.appointmentTime || 'scheduled time';
     const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
+    const patientName = this.getPatientName(appointment.patient);
 
-    const message = `Reminder: Dear ${appointment.patient.firstName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
+    const message = `Reminder: Dear ${patientName}, you have a ${appointment.appointmentType} appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please arrive 15 minutes early. - LSHD1 Screening Program`;
 
     const result = await this.sendSms({
       phoneNumber: appointment.patient.phone,
@@ -272,8 +270,9 @@ export class SmsService {
     });
     const screeningName = this.getScreeningName(screeningType);
     const facilityInfo = this.getFacilityInfo(patient.phcCenter);
+    const patientName = this.getPatientName(patient);
 
-    const message = `Dear ${patient.firstName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit ${facilityInfo} or call to schedule an appointment. - LSHD1 Screening Program`;
+    const message = `Dear ${patientName}, your ${screeningName} follow-up is due on ${dueDateStr}. Please visit ${facilityInfo} or call to schedule an appointment. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: patient.phone,
@@ -410,23 +409,35 @@ export class SmsService {
   }
 
   /**
-   * Format phone number to include country code
+   * Format phone number for Twilio
+   * Twilio requires E.164 format: +[country code][number]
+   * Example: +2348012345678 for Nigerian numbers
    */
   private formatPhoneNumber(phone: string): string {
-    // Remove any spaces, dashes, or special characters
+    // Remove any spaces, dashes, parentheses, or special characters
     let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+
+    // Remove existing + if present (we'll add it back)
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
 
     // If starts with 0, replace with Nigeria country code
     if (cleaned.startsWith('0')) {
       cleaned = '234' + cleaned.substring(1);
     }
 
-    // If doesn't start with +, add it
-    if (!cleaned.startsWith('+')) {
-      cleaned = '+' + cleaned;
+    // If it doesn't start with a country code, assume Nigerian number
+    if (!cleaned.startsWith('234') && cleaned.length === 10) {
+      cleaned = '234' + cleaned;
     }
 
-    return cleaned;
+    // Add + prefix for E.164 format
+    const formatted = '+' + cleaned;
+
+    this.logger.debug(`Phone formatted: ${phone} -> ${formatted}`);
+
+    return formatted;
   }
 
   /**
@@ -482,6 +493,92 @@ export class SmsService {
     return name;
   }
 
+  /**
+   * Get formatted patient name with fallback handling
+   * Returns full name (First Last) or just first name if last name is empty
+   * Falls back to 'Valued Patient' if no name is available
+   */
+  private getPatientName(patient: { firstName?: string; lastName?: string; fullName?: string }): string {
+    // Try to construct from firstName and lastName
+    const firstName = patient.firstName?.trim();
+    const lastName = patient.lastName?.trim();
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+
+    if (firstName) {
+      return firstName;
+    }
+
+    // Fallback to fullName if available
+    if (patient.fullName?.trim()) {
+      return patient.fullName.trim();
+    }
+
+    // Final fallback
+    return 'Valued Patient';
+  }
+
+  // ==================== STAFF NOTIFICATION METHODS ====================
+
+  /**
+   * Send SMS notification when staff account is approved
+   */
+  async sendStaffApprovalSms(
+    staffPhone: string,
+    staffName: string,
+    role: string,
+  ): Promise<SmsLog> {
+    const formattedName = staffName?.trim() || 'Staff Member';
+    const formattedRole = this.formatRoleName(role);
+
+    const message = `Dear ${formattedName}, your ${formattedRole} account has been approved. You can now log in to the LSHD1 Screening System. - LSHD1 Admin`;
+
+    return this.sendSms({
+      phoneNumber: staffPhone,
+      message,
+      smsType: 'STAFF_APPROVAL',
+      relatedEntity: 'USER',
+    });
+  }
+
+  /**
+   * Send SMS notification to admins when new staff registers
+   */
+  async sendNewStaffRegistrationSms(
+    adminPhone: string,
+    adminName: string,
+    newStaffName: string,
+    newStaffRole: string,
+  ): Promise<SmsLog> {
+    const formattedRole = this.formatRoleName(newStaffRole);
+
+    const message = `Dear ${adminName || 'Admin'}, a new ${formattedRole} (${newStaffName}) has registered and is awaiting your approval. Please log in to review. - LSHD1 System`;
+
+    return this.sendSms({
+      phoneNumber: adminPhone,
+      message,
+      smsType: 'STAFF_REGISTRATION',
+      relatedEntity: 'USER',
+    });
+  }
+
+  /**
+   * Format role name for display in SMS
+   */
+  private formatRoleName(role: string): string {
+    const roleMap: Record<string, string> = {
+      admin: 'Administrator',
+      him_officer: 'HIM Officer',
+      nurse: 'Nurse',
+      doctor: 'Doctor',
+      mls: 'Medical Lab Scientist',
+      cho: 'Community Health Officer',
+    };
+    return roleMap[role] || role;
+  }
+
   // ==================== FRONTEND-COMPATIBLE METHODS ====================
 
   /**
@@ -533,8 +630,9 @@ export class SmsService {
     const screeningName = this.getScreeningName(screening.screeningType);
     const resultText = this.getResultText(screening.patientStatus || 'pending');
     const facilityInfo = this.getFacilityInfo(screening.patient.phcCenter);
+    const patientName = this.getPatientName(screening.patient);
 
-    const message = `Dear ${screening.patient.firstName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
+    const message = `Dear ${patientName}, your ${screeningName} screening result is ${resultText}. Please visit ${facilityInfo} for more information. - LSHD1 Screening Program`;
 
     const result = await this.sendSms({
       phoneNumber: screening.patient.phone,
@@ -583,8 +681,9 @@ export class SmsService {
     });
     const timeStr = appointment.appointmentTime || 'scheduled time';
     const facilityInfo = this.getFacilityInfo(appointment.phcCenter);
+    const patientName = this.getPatientName(appointment.patient);
 
-    const message = `Dear ${appointment.patient.firstName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please don't forget to attend. - LSHD1 Screening Program`;
+    const message = `Dear ${patientName}, this is a reminder about your follow-up appointment on ${dateStr} at ${timeStr} at ${facilityInfo}. Please don't forget to attend. - LSHD1 Screening Program`;
 
     return this.sendSms({
       phoneNumber: appointment.patient.phone,

@@ -44,14 +44,14 @@ export class UsersController {
 
   @Put(':id/reject')
   @Roles(Role.ADMIN)
-  async rejectUser(@Param('id') id: string) {
-    return this.usersService.rejectUser(+id);
+  async rejectUser(@Param('id') id: string, @Request() req: any) {
+    return this.usersService.rejectUser(+id, req.user.id);
   }
 
   @Put(':id/suspend')
   @Roles(Role.ADMIN)
-  async suspendUser(@Param('id') id: string) {
-    return this.usersService.suspendUser(+id);
+  async suspendUser(@Param('id') id: string, @Request() req: any) {
+    return this.usersService.suspendUser(+id, req.user.id);
   }
 
   @Put(':id/reactivate')

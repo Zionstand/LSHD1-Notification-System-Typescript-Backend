@@ -35,11 +35,11 @@ let UsersController = class UsersController {
     async approveUser(id, req) {
         return this.usersService.approveUser(+id, req.user.id);
     }
-    async rejectUser(id) {
-        return this.usersService.rejectUser(+id);
+    async rejectUser(id, req) {
+        return this.usersService.rejectUser(+id, req.user.id);
     }
-    async suspendUser(id) {
-        return this.usersService.suspendUser(+id);
+    async suspendUser(id, req) {
+        return this.usersService.suspendUser(+id, req.user.id);
     }
     async reactivateUser(id, req) {
         return this.usersService.reactivateUser(+id, req.user.id);
@@ -82,16 +82,18 @@ __decorate([
     (0, common_1.Put)(':id/reject'),
     (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "rejectUser", null);
 __decorate([
     (0, common_1.Put)(':id/suspend'),
     (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "suspendUser", null);
 __decorate([

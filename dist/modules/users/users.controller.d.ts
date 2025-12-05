@@ -54,7 +54,7 @@ export declare class UsersController {
             approvedAt: Date;
         };
     }>;
-    rejectUser(id: string): Promise<{
+    rejectUser(id: string, req: any): Promise<{
         message: string;
         user: {
             id: number;
@@ -73,7 +73,7 @@ export declare class UsersController {
             approvedAt: Date;
         };
     }>;
-    suspendUser(id: string): Promise<{
+    suspendUser(id: string, req: any): Promise<{
         message: string;
         user: {
             id: number;

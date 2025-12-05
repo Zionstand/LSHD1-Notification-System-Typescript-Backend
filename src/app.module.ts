@@ -11,8 +11,10 @@ import { AppointmentsModule } from "./modules/appointments/appointments.module";
 import { AuditModule } from "./modules/audit/audit.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { SmsModule } from "./modules/sms/sms.module";
+import { EmailModule } from "./modules/email/email.module";
 import { VitalsModule } from "./modules/vitals/vitals.module";
-// import { NotificationsModule } from './modules/notifications/notifications.module';
+import { DividersModule } from "./modules/dividers/dividers.module";
+import { VolunteersModule } from "./modules/volunteers/volunteers.module";
 
 @Module({
   imports: [
@@ -43,8 +45,10 @@ import { VitalsModule } from "./modules/vitals/vitals.module";
     AuditModule,
     ReportsModule,
     SmsModule,
+    EmailModule,
     VitalsModule,
-    // NotificationsModule,
+    DividersModule,
+    VolunteersModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,36 @@
+import { User } from '../../users/entities/user.entity';
+import { PhcCenter } from '../../facilities/entities/phc-center.entity';
+export type VolunteerStatus = 'active' | 'inactive' | 'pending';
+export type VolunteerGender = 'male' | 'female';
+export declare class Volunteer {
+    id: number;
+    volunteerCode: string;
+    fullName: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    altPhone: string | null;
+    email: string | null;
+    gender: VolunteerGender;
+    age: number | null;
+    dateOfBirth: Date | null;
+    address: string | null;
+    lga: string | null;
+    ward: string | null;
+    community: string | null;
+    occupation: string | null;
+    educationLevel: string | null;
+    nextOfKin: string | null;
+    nextOfKinPhone: string | null;
+    skills: string | null;
+    trainingCompleted: number;
+    trainingDate: Date | null;
+    notes: string | null;
+    status: VolunteerStatus;
+    phcCenterId: number | null;
+    registeredBy: number;
+    createdAt: Date;
+    updatedAt: Date;
+    phcCenter: PhcCenter;
+    registeredByUser: User;
+}

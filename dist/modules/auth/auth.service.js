@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -21,13 +22,18 @@ const bcrypt = require("bcryptjs");
 const user_entity_1 = require("../users/entities/user.entity");
 const roles_constant_1 = require("./constants/roles.constant");
 const audit_service_1 = require("../audit/audit.service");
+const sms_service_1 = require("../sms/sms.service");
+const email_service_1 = require("../email/email.service");
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 15;
-let AuthService = class AuthService {
-    constructor(usersRepository, jwtService, auditService) {
+let AuthService = AuthService_1 = class AuthService {
+    constructor(usersRepository, jwtService, auditService, smsService, emailService) {
         this.usersRepository = usersRepository;
         this.jwtService = jwtService;
         this.auditService = auditService;
+        this.smsService = smsService;
+        this.emailService = emailService;
+        this.logger = new common_1.Logger(AuthService_1.name);
     }
     async register(registerDto) {
         const { email, password, fullName, phone, role, phcCenterId, staffId } = registerDto;
@@ -86,6 +92,7 @@ let AuthService = class AuthService {
                 },
             };
         }
+        this.notifyAdminsOfNewRegistration(savedUser.fullName, savedUser.email, savedUser.role);
         return {
             message: 'Registration successful. Your account is pending approval by an administrator.',
             user: {
@@ -96,6 +103,36 @@ let AuthService = class AuthService {
                 status: savedUser.status,
             },
         };
+    }
+    async notifyAdminsOfNewRegistration(newStaffName, newStaffEmail, newStaffRole) {
+        try {
+            const admins = await this.usersRepository.find({
+                where: { role: 'admin', status: 'approved' },
+            });
+            const adminsWithPhone = admins.filter(admin => admin.phone);
+            if (adminsWithPhone.length > 0) {
+                const adminsToNotify = adminsWithPhone.slice(0, 3);
+                for (const admin of adminsToNotify) {
+                    try {
+                        await this.smsService.sendNewStaffRegistrationSms(admin.phone, admin.fullName, newStaffName, newStaffRole);
+                        this.logger.log(`New registration SMS sent to admin ${admin.fullName}`);
+                    }
+                    catch (error) {
+                        this.logger.error(`Failed to send SMS to admin ${admin.fullName}: ${error.message}`);
+                    }
+                }
+            }
+            try {
+                await this.emailService.sendNewStaffRegistrationEmail(newStaffName, newStaffEmail, newStaffRole);
+                this.logger.log(`New registration email sent to admin`);
+            }
+            catch (error) {
+                this.logger.error(`Failed to send new registration email: ${error.message}`);
+            }
+        }
+        catch (error) {
+            this.logger.error(`Failed to notify admins of new registration: ${error.message}`);
+        }
     }
     async login(loginDto, ipAddress, userAgent) {
         const { email, password } = loginDto;
@@ -211,11 +248,15 @@ let AuthService = class AuthService {
     }
 };
 exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => sms_service_1.SmsService))),
+    __param(4, (0, common_1.Inject)((0, common_1.forwardRef)(() => email_service_1.EmailService))),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         jwt_1.JwtService,
-        audit_service_1.AuditService])
+        audit_service_1.AuditService,
+        sms_service_1.SmsService,
+        email_service_1.EmailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

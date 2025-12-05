@@ -16,6 +16,9 @@ exports.PathwayScreeningsController = void 0;
 const common_1 = require("@nestjs/common");
 const pathway_screenings_service_1 = require("./pathway-screenings.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const roles_constant_1 = require("../auth/constants/roles.constant");
 const hypertension_screening_dto_1 = require("./dto/hypertension-screening.dto");
 const diabetes_screening_dto_1 = require("./dto/diabetes-screening.dto");
 const cervical_screening_dto_1 = require("./dto/cervical-screening.dto");
@@ -92,6 +95,7 @@ let PathwayScreeningsController = class PathwayScreeningsController {
 exports.PathwayScreeningsController = PathwayScreeningsController;
 __decorate([
     (0, common_1.Post)(':id/hypertension'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.CHO),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -116,6 +120,7 @@ __decorate([
 ], PathwayScreeningsController.prototype, "updateHypertensionScreening", null);
 __decorate([
     (0, common_1.Post)(':id/diabetes'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.MLS),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -140,6 +145,7 @@ __decorate([
 ], PathwayScreeningsController.prototype, "updateDiabetesScreening", null);
 __decorate([
     (0, common_1.Post)(':id/cervical'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.NURSE),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -164,6 +170,7 @@ __decorate([
 ], PathwayScreeningsController.prototype, "updateCervicalScreening", null);
 __decorate([
     (0, common_1.Post)(':id/breast'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.DOCTOR),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -188,6 +195,7 @@ __decorate([
 ], PathwayScreeningsController.prototype, "updateBreastScreening", null);
 __decorate([
     (0, common_1.Post)(':id/psa'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.MLS),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -219,7 +227,7 @@ __decorate([
 ], PathwayScreeningsController.prototype, "getPathwayData", null);
 exports.PathwayScreeningsController = PathwayScreeningsController = __decorate([
     (0, common_1.Controller)('screenings'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [pathway_screenings_service_1.PathwayScreeningsService])
 ], PathwayScreeningsController);
 //# sourceMappingURL=pathway-screenings.controller.js.map

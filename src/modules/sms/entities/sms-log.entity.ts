@@ -14,6 +14,8 @@ export type SmsType =
   | 'APPOINTMENT_REMINDER'
   | 'FOLLOW_UP_REMINDER'
   | 'APPOINTMENT_CONFIRMATION'
+  | 'STAFF_APPROVAL'
+  | 'STAFF_REGISTRATION'
   | 'GENERAL';
 
 export type SmsStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED';

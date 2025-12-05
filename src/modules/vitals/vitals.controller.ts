@@ -10,13 +10,20 @@ import {
 import { VitalsService } from './vitals.service';
 import { CreateVitalRecordDto } from './dto/create-vital-record.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/constants/roles.constant';
 
 @Controller('vitals')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class VitalsController {
   constructor(private readonly vitalsService: VitalsService) {}
 
+  /**
+   * Record vital signs - Not allowed for HIM Officers (they can only view)
+   */
   @Post()
+  @Roles(Role.ADMIN, Role.NURSE, Role.DOCTOR, Role.CHO, Role.MLS)
   async create(@Body() createDto: CreateVitalRecordDto, @Request() req: any) {
     const record = await this.vitalsService.create(createDto, req.user.id);
     return {

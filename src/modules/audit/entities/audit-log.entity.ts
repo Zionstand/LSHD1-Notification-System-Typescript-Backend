@@ -19,7 +19,8 @@ export type AuditAction =
   | 'EXPORT'
   | 'APPROVE'
   | 'REJECT'
-  | 'SUSPEND';
+  | 'SUSPEND'
+  | 'REACTIVATE';
 
 export type AuditResource =
   | 'USER'

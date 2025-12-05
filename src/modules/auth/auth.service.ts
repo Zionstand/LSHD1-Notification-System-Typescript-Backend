@@ -2,6 +2,9 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  Inject,
+  forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +15,8 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Role, ROLE_LEVELS } from './constants/roles.constant';
 import { AuditService } from '../audit/audit.service';
+import { SmsService } from '../sms/sms.service';
+import { EmailService } from '../email/email.service';
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 15;
@@ -25,11 +30,17 @@ interface JwtPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
     private auditService: AuditService,
+    @Inject(forwardRef(() => SmsService))
+    private smsService: SmsService,
+    @Inject(forwardRef(() => EmailService))
+    private emailService: EmailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -107,7 +118,10 @@ export class AuthService {
       };
     }
 
-    // For non-admin users, just return success message
+    // For non-admin users, notify admins about the new registration
+    this.notifyAdminsOfNewRegistration(savedUser.fullName, savedUser.email, savedUser.role);
+
+    // Return success message
     return {
       message:
         'Registration successful. Your account is pending approval by an administrator.',
@@ -119,6 +133,54 @@ export class AuthService {
         status: savedUser.status,
       },
     };
+  }
+
+  /**
+   * Notify all admin users about a new staff registration
+   */
+  private async notifyAdminsOfNewRegistration(newStaffName: string, newStaffEmail: string, newStaffRole: string): Promise<void> {
+    try {
+      // Find all admin users with phone numbers
+      const admins = await this.usersRepository.find({
+        where: { role: 'admin' as UserRole, status: 'approved' },
+      });
+
+      const adminsWithPhone = admins.filter(admin => admin.phone);
+
+      // Send SMS to each admin (limit to first 3 to avoid spam)
+      if (adminsWithPhone.length > 0) {
+        const adminsToNotify = adminsWithPhone.slice(0, 3);
+
+        for (const admin of adminsToNotify) {
+          try {
+            await this.smsService.sendNewStaffRegistrationSms(
+              admin.phone,
+              admin.fullName,
+              newStaffName,
+              newStaffRole,
+            );
+            this.logger.log(`New registration SMS sent to admin ${admin.fullName}`);
+          } catch (error) {
+            this.logger.error(`Failed to send SMS to admin ${admin.fullName}: ${error.message}`);
+          }
+        }
+      }
+
+      // Send Email notification to admin
+      try {
+        await this.emailService.sendNewStaffRegistrationEmail(
+          newStaffName,
+          newStaffEmail,
+          newStaffRole,
+        );
+        this.logger.log(`New registration email sent to admin`);
+      } catch (error) {
+        this.logger.error(`Failed to send new registration email: ${error.message}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to notify admins of new registration: ${error.message}`);
+      // Don't fail registration if notification fails
+    }
   }
 
   async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {

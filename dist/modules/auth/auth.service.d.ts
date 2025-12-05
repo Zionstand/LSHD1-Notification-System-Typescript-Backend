@@ -4,11 +4,16 @@ import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuditService } from '../audit/audit.service';
+import { SmsService } from '../sms/sms.service';
+import { EmailService } from '../email/email.service';
 export declare class AuthService {
     private usersRepository;
     private jwtService;
     private auditService;
-    constructor(usersRepository: Repository<User>, jwtService: JwtService, auditService: AuditService);
+    private smsService;
+    private emailService;
+    private readonly logger;
+    constructor(usersRepository: Repository<User>, jwtService: JwtService, auditService: AuditService, smsService: SmsService, emailService: EmailService);
     register(registerDto: RegisterDto): Promise<{
         message: string;
         token: string;
@@ -40,6 +45,7 @@ export declare class AuthService {
         };
         token?: undefined;
     }>;
+    private notifyAdminsOfNewRegistration;
     login(loginDto: LoginDto, ipAddress?: string, userAgent?: string): Promise<{
         message: string;
         token: string;

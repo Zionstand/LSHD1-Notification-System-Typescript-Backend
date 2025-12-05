@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { User } from '../users/entities/user.entity';
+import { SmsModule } from '../sms/sms.module';
+import { EmailModule } from '../email/email.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { User } from '../users/entities/user.entity';
       }),
       inject: [ConfigService],
     }),
+    forwardRef(() => SmsModule),
+    forwardRef(() => EmailModule),
+    AuditModule,
   ],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   controllers: [AuthController],

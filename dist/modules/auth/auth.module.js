@@ -18,6 +18,9 @@ const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 const roles_guard_1 = require("./guards/roles.guard");
 const user_entity_1 = require("../users/entities/user.entity");
+const sms_module_1 = require("../sms/sms.module");
+const email_module_1 = require("../email/email.module");
+const audit_module_1 = require("../audit/audit.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -34,6 +37,9 @@ exports.AuthModule = AuthModule = __decorate([
                 }),
                 inject: [config_1.ConfigService],
             }),
+            (0, common_1.forwardRef)(() => sms_module_1.SmsModule),
+            (0, common_1.forwardRef)(() => email_module_1.EmailModule),
+            audit_module_1.AuditModule,
         ],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard],
         controllers: [auth_controller_1.AuthController],

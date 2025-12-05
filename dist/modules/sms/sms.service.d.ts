@@ -21,9 +21,8 @@ export declare class SmsService {
     private screeningRepository;
     private configService;
     private readonly logger;
-    private readonly baseUrl;
-    private readonly apiKey;
-    private readonly senderName;
+    private readonly twilioClient;
+    private readonly twilioPhoneNumber;
     constructor(smsLogRepository: Repository<SmsLog>, patientRepository: Repository<Patient>, appointmentRepository: Repository<Appointment>, screeningRepository: Repository<Screening>, configService: ConfigService);
     sendSms(params: SendSmsParams): Promise<SmsLog>;
     sendScreeningResultSms(patientId: number, screeningType: string, result: string, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
@@ -55,6 +54,10 @@ export declare class SmsService {
     private getResultText;
     private getScreeningName;
     private getFacilityInfo;
+    private getPatientName;
+    sendStaffApprovalSms(staffPhone: string, staffName: string, role: string): Promise<SmsLog>;
+    sendNewStaffRegistrationSms(adminPhone: string, adminName: string, newStaffName: string, newStaffRole: string): Promise<SmsLog>;
+    private formatRoleName;
     sendManualSmsToPatient(patientId: number, message: string, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
     sendScreeningSmsById(screeningId: number, sentBy: number, facilityId?: number): Promise<SmsLog | null>;
     sendFollowupSmsById(appointmentId: number, sentBy: number, facilityId?: number): Promise<SmsLog | null>;

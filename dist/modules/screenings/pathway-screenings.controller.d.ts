@@ -49,7 +49,7 @@ export declare class PathwayScreeningsController {
         message: string;
         data: {
             id: number;
-            screeningResult: "negative" | "positive" | "suspicious" | "inconclusive";
+            screeningResult: "positive" | "negative" | "suspicious" | "inconclusive";
             followUpRequired: boolean;
         };
     }>;

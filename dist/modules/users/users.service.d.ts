@@ -1,9 +1,16 @@
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { SmsService } from '../sms/sms.service';
+import { EmailService } from '../email/email.service';
+import { AuditService } from '../audit/audit.service';
 export declare class UsersService {
     private usersRepository;
-    constructor(usersRepository: Repository<User>);
+    private smsService;
+    private emailService;
+    private auditService;
+    private readonly logger;
+    constructor(usersRepository: Repository<User>, smsService: SmsService, emailService: EmailService, auditService: AuditService);
     create(createUserDto: CreateUserDto): Promise<User>;
     findByEmail(email: string): Promise<User | null>;
     findAll(status?: string): Promise<{
@@ -59,7 +66,7 @@ export declare class UsersService {
             approvedAt: Date;
         };
     }>;
-    rejectUser(id: number): Promise<{
+    rejectUser(id: number, rejectedBy: number): Promise<{
         message: string;
         user: {
             id: number;
@@ -78,7 +85,7 @@ export declare class UsersService {
             approvedAt: Date;
         };
     }>;
-    suspendUser(id: number): Promise<{
+    suspendUser(id: number, suspendedBy: number): Promise<{
         message: string;
         user: {
             id: number;
@@ -97,7 +104,7 @@ export declare class UsersService {
             approvedAt: Date;
         };
     }>;
-    reactivateUser(id: number, approvedBy: number): Promise<{
+    reactivateUser(id: number, reactivatedBy: number): Promise<{
         message: string;
         user: {
             id: number;

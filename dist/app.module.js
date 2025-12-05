@@ -20,7 +20,10 @@ const appointments_module_1 = require("./modules/appointments/appointments.modul
 const audit_module_1 = require("./modules/audit/audit.module");
 const reports_module_1 = require("./modules/reports/reports.module");
 const sms_module_1 = require("./modules/sms/sms.module");
+const email_module_1 = require("./modules/email/email.module");
 const vitals_module_1 = require("./modules/vitals/vitals.module");
+const dividers_module_1 = require("./modules/dividers/dividers.module");
+const volunteers_module_1 = require("./modules/volunteers/volunteers.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -54,7 +57,10 @@ exports.AppModule = AppModule = __decorate([
             audit_module_1.AuditModule,
             reports_module_1.ReportsModule,
             sms_module_1.SmsModule,
+            email_module_1.EmailModule,
             vitals_module_1.VitalsModule,
+            dividers_module_1.DividersModule,
+            volunteers_module_1.VolunteersModule,
         ],
     })
 ], AppModule);

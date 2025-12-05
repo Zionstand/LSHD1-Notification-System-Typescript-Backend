@@ -20,6 +20,9 @@ const update_vitals_dto_1 = require("./dto/update-vitals.dto");
 const complete_screening_dto_1 = require("./dto/complete-screening.dto");
 const doctor_assessment_dto_1 = require("./dto/doctor-assessment.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const roles_constant_1 = require("../auth/constants/roles.constant");
 let ScreeningsController = class ScreeningsController {
     constructor(screeningsService) {
         this.screeningsService = screeningsService;
@@ -82,6 +85,7 @@ __decorate([
 ], ScreeningsController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':id/vitals'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.NURSE, roles_constant_1.Role.DOCTOR, roles_constant_1.Role.CHO, roles_constant_1.Role.MLS),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -90,6 +94,7 @@ __decorate([
 ], ScreeningsController.prototype, "updateVitals", null);
 __decorate([
     (0, common_1.Put)(':id/complete'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.DOCTOR),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -105,6 +110,7 @@ __decorate([
 ], ScreeningsController.prototype, "findPendingDoctorReview", null);
 __decorate([
     (0, common_1.Put)(':id/doctor-assessment'),
+    (0, roles_decorator_1.Roles)(roles_constant_1.Role.ADMIN, roles_constant_1.Role.DOCTOR),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
@@ -114,7 +120,7 @@ __decorate([
 ], ScreeningsController.prototype, "addDoctorAssessment", null);
 exports.ScreeningsController = ScreeningsController = __decorate([
     (0, common_1.Controller)('screenings'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [screenings_service_1.ScreeningsService])
 ], ScreeningsController);
 //# sourceMappingURL=screenings.controller.js.map

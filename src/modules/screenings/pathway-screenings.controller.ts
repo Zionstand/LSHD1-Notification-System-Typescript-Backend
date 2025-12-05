@@ -10,6 +10,9 @@ import {
 } from '@nestjs/common';
 import { PathwayScreeningsService } from './pathway-screenings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/constants/roles.constant';
 import {
   CreateHypertensionScreeningDto,
   UpdateHypertensionScreeningDto,
@@ -32,13 +35,17 @@ import {
 } from './dto/psa-screening.dto';
 
 @Controller('screenings')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PathwayScreeningsController {
   constructor(private pathwayService: PathwayScreeningsService) {}
 
   // ==================== HYPERTENSION ====================
 
+  /**
+   * Create hypertension screening - CHO and Admin only
+   */
   @Post(':id/hypertension')
+  @Roles(Role.ADMIN, Role.CHO)
   async createHypertensionScreening(
     @Param('id') id: string,
     @Body() dto: Omit<CreateHypertensionScreeningDto, 'screeningId'>,
@@ -65,7 +72,11 @@ export class PathwayScreeningsController {
 
   // ==================== DIABETES ====================
 
+  /**
+   * Create diabetes screening - MLS and Admin only
+   */
   @Post(':id/diabetes')
+  @Roles(Role.ADMIN, Role.MLS)
   async createDiabetesScreening(
     @Param('id') id: string,
     @Body() dto: Omit<CreateDiabetesScreeningDto, 'screeningId'>,
@@ -92,7 +103,11 @@ export class PathwayScreeningsController {
 
   // ==================== CERVICAL ====================
 
+  /**
+   * Create cervical screening - Nurse and Admin only
+   */
   @Post(':id/cervical')
+  @Roles(Role.ADMIN, Role.NURSE)
   async createCervicalScreening(
     @Param('id') id: string,
     @Body() dto: Omit<CreateCervicalScreeningDto, 'screeningId'>,
@@ -119,7 +134,11 @@ export class PathwayScreeningsController {
 
   // ==================== BREAST ====================
 
+  /**
+   * Create breast screening - Doctor and Admin only
+   */
   @Post(':id/breast')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   async createBreastScreening(
     @Param('id') id: string,
     @Body() dto: Omit<CreateBreastScreeningDto, 'screeningId'>,
@@ -146,7 +165,11 @@ export class PathwayScreeningsController {
 
   // ==================== PSA ====================
 
+  /**
+   * Create PSA screening - MLS and Admin only
+   */
   @Post(':id/psa')
+  @Roles(Role.ADMIN, Role.MLS)
   async createPsaScreening(
     @Param('id') id: string,
     @Body() dto: Omit<CreatePsaScreeningDto, 'screeningId'>,

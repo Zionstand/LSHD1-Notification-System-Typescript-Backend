@@ -1,6 +1,6 @@
 import { Patient } from '../../patients/entities/patient.entity';
 import { User } from '../../users/entities/user.entity';
-export type SmsType = 'SCREENING_RESULT' | 'APPOINTMENT_REMINDER' | 'FOLLOW_UP_REMINDER' | 'APPOINTMENT_CONFIRMATION' | 'GENERAL';
+export type SmsType = 'SCREENING_RESULT' | 'APPOINTMENT_REMINDER' | 'FOLLOW_UP_REMINDER' | 'APPOINTMENT_CONFIRMATION' | 'STAFF_APPROVAL' | 'STAFF_REGISTRATION' | 'GENERAL';
 export type SmsStatus = 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED';
 export declare class SmsLog {
     id: number;
